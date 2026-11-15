@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mora IPTV Player</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="$WEBAPIS/webapis/webapis.js"></script>
+  </head>
+  <body>
+    <!--
+      Gerçek video konumu/boyutu webapis.avplay.setDisplayRect() ile ayrı bir donanım
+      katmanında belirleniyor (bkz. tizenPlayerAdapter.ts) — bu <object>'in CSS boyutu
+      oynatmayı etkilemiyor, sadece AVPlay API bağlamının var olması için gerekli.
+      Küçük tutuyoruz: Tizen dışı bir tarayıcıda önizlerken (bu sadece kozmetik bir
+      önizleme kolaylığı, gerçek TV'de AVPlay tanınır ve bu kutu hiç görünmez)
+      "eklenti desteklenmiyor" kutusunun tüm ekranı kaplamasını önler.
+    -->
+    <object id="av-player" type="application/avplayer" style="position: absolute; top: 0; left: 0; width: 1px; height: 1px; z-index: -1"></object>
+    <div id="app"></div>
+    <script src="bundle.js"></script>
+  </body>
+</html>

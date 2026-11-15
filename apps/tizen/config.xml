@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets"
+        id="http://iptvplayer.local/IptvPlayer" version="1.0.0" viewmodes="maximized">
+  <!-- Tizen paket kimliği tam 10 alfanümerik karakter olmalı; uygulama kimliği "<paket>.<ad>". -->
+  <tizen:application id="IptvPlayer.IptvPlayer" package="IptvPlayer" required_version="6.0"/>
+  <content src="index.html"/>
+  <name>Mora IPTV Player</name>
+  <!-- Uygulama ikonu: 117x117 PNG (TV Apps ekranında görünür). -->
+  <icon src="icon.png"/>
+  <!-- IPTV sunucuları genelde CORS başlığı göndermiyor; web app'te buna yerel proxy ile çözülüyor
+       (apps/web), ama Tizen widget'ları için bu etiket CORS kısıtlamasını devre dışı bırakıyor
+       (sunucudan Access-Control-Allow-Origin gelmesine gerek kalmadan fetch/XHR çalışır). -->
+  <access origin="*" subdomains="true"/>
+  <feature name="http://tizen.org/feature/screen.size.all"/>
+  <tizen:privilege name="http://tizen.org/privilege/internet"/>
+  <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
+  <!-- webapis.network.getMac() / isConnectedToGateway() için (Samsung Network API dokümanı). -->
+  <tizen:privilege name="http://developer.samsung.com/privilege/network.public"/>
+  <tizen:setting screen-orientation="landscape" context-menu="disable" background-support="disable"
+                  encryption="disable" install-location="auto" hwkey-event="enable"/>
+  <tizen:metadata key="http://samsung.com/tv/metadata/use.network" value="true"/>
+</widget>

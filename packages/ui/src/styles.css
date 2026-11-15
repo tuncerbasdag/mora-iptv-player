@@ -1,0 +1,1893 @@
+:root {
+  --bg: #242323;
+  --surface: #2d2c2c;
+  --surface-2: #383736;
+  --surface-hover: #424141;
+  --border: #4a4845;
+  --text: #f5f1ec;
+  --text-dim: #bdb6ae;
+  --peach: #f6cba7;
+  --lavender: #d3caee;
+  --mint: #c3ddc6;
+  --ink: #242323;
+  --accent: #e68137;
+  --accent-dim: #a8571a;
+  --error: #ff8a8a;
+  --warn: #f2c75c;
+
+  /* Helper colors that vary across themes: components use these instead of a fixed color; other themes redefine them. */
+  --accent-soft: rgba(230, 129, 55, 0.2); /* selected / focused row background */
+  --accent-soft-2: rgba(230, 129, 55, 0.16); /* selected card / genre background */
+  --accent-ring: rgba(230, 129, 55, 0.45); /* ring of the progress bar circle */
+  --accent-ring-2: rgba(230, 129, 55, 0.3); /* progress shadow */
+  --line-35: rgba(245, 241, 236, 0.35); /* faint border */
+  --line-25: rgba(245, 241, 236, 0.25); /* slider track */
+  --line-10: rgba(245, 241, 236, 0.1);
+  --line-75: rgba(245, 241, 236, 0.75); /* seek marker line */
+  --bar-bg: rgba(36, 35, 35, 0.88); /* player bottom bar */
+  --track-dark: rgba(36, 35, 35, 0.35); /* progress bar track on top of a card */
+  --deco-1: rgba(36, 35, 35, 0.07); /* Home screen decorative circles */
+  --deco-2: rgba(36, 35, 35, 0.06);
+  --danger: #f4a58a; /* error / danger */
+  --ok: #9ed9b8; /* "Connected", "Stable" */
+  --ok-strong: #2f7d4f; /* Live TV preview: "Stable" */
+  --slow: #b7791f; /* "Buffering" */
+  --lost: #a8321f; /* "Disconnected" */
+  --muted: #8e8880; /* inactive / "Coming soon" */
+  --on-card: #242323; /* text on top of Home screen cards */
+  --on-card-dim: #5a4030; /* secondary text on top of the colored box */
+  --on-card-strong: #8a3f0b; /* bitrate text on top of the colored box */
+  --loading-text: #ede6dd; /* loading message */
+  --video-a: #6b5a4c; /* video placeholder gradient */
+  --video-b: #2a2928;
+  --card-live: var(--peach); /* Home screen card backgrounds (color or gradient) */
+  --card-series: var(--lavender);
+  --card-movies: var(--mint);
+  --app-bg-image: none; /* light gradients over the app background */
+  --settings-btn-bg: transparent; /* Home screen Settings button */
+  --settings-btn-border: var(--border);
+  --settings-btn-fg: var(--text);
+  --ink-45: rgba(36, 35, 35, 0.45); /* channel logo border on the focused (filled) row */
+  --logo-bg: var(--accent); /* Home screen logo box and the play icon inside it */
+  --logo-ink: var(--ink);
+  --poster-1: #f6cba7; /* poster placeholders (card background when there's no poster) */
+  --poster-2: #d3caee;
+  --poster-3: #c3ddc6;
+  --poster-4: #383736;
+  --poster-deco-1: rgba(36, 35, 35, 0.09); /* poster placeholder decorations: large shape on a light poster */
+  --poster-deco-2: rgba(36, 35, 35, 0.06); /* small shape on a light poster */
+  --poster-deco-dark-1: rgba(246, 203, 167, 0.22); /* large shape on a dark (4th) poster */
+  --poster-deco-dark-2: rgba(230, 129, 55, 0.55); /* small shape on a dark poster */
+
+  /* Base 24px for readability from a 10-meter distance (TV); the steps carry the card/heading hierarchy. */
+  --fs-xs: 20px;
+  --fs-sm: 24px;
+  --fs-md: 28px;
+  --fs-lg: 36px;
+  --fs-xl: 48px;
+  --fs-2xl: 64px;
+
+  --radius-md: 20px;
+  --radius-lg: 40px;
+}
+
+/* ---- Theme 2 (theme2): dark navy-black background, white focus/button, blue selected background, maroon-blue gradient cards ---- */
+:root[data-theme='theme2'] {
+  --poster-deco-1: rgba(8, 8, 11, 0.09);
+  --poster-deco-2: rgba(255, 255, 255, 0.08);
+  --poster-deco-dark-1: rgba(212, 213, 226, 0.22);
+  --poster-deco-dark-2: rgba(30, 63, 208, 0.55);
+  --ink-45: rgba(8, 8, 11, 0.45);
+  --bg: #08080b;
+  --surface: #101016;
+  --surface-2: #1a1a22;
+  --surface-hover: #242430;
+  --border: rgba(255, 255, 255, 0.16);
+  --text: #ffffff;
+  --text-dim: #a8a9b8;
+  --accent: #ffffff;
+  --accent-dim: #8c8da0;
+  --peach: #d4d5e2;
+  --lavender: #2a5bff;
+  --mint: #d4d5e2;
+  --ink: #08080b;
+  --accent-soft: rgba(30, 63, 208, 0.3);
+  --accent-soft-2: rgba(30, 63, 208, 0.24);
+  --accent-ring: rgba(30, 63, 208, 0.45);
+  --accent-ring-2: rgba(30, 63, 208, 0.3);
+  --line-35: rgba(255, 255, 255, 0.35);
+  --line-25: rgba(255, 255, 255, 0.25);
+  --line-10: rgba(255, 255, 255, 0.1);
+  --line-75: rgba(255, 255, 255, 0.75);
+  --bar-bg: rgba(8, 8, 11, 0.88);
+  --track-dark: rgba(8, 8, 11, 0.35);
+  --deco-1: rgba(255, 255, 255, 0.1);
+  --deco-2: rgba(255, 255, 255, 0.08);
+  --ok-strong: #9ed9b8;
+  --muted: #6a6b7c;
+  --on-card: #ffffff;
+  --on-card-dim: #d4d5e2;
+  --on-card-strong: #e4e5f0;
+  --loading-text: #e4e5f0;
+  --video-a: #4a1230;
+  --video-b: #0e1450;
+  --card-live: linear-gradient(155deg, #8a1538 0%, #1e3fd0 100%);
+  --card-series: linear-gradient(155deg, #1e3fd0 0%, #6a1031 100%);
+  --card-movies: linear-gradient(155deg, #5b0f2b 0%, #2a5bff 100%);
+  --app-bg-image: radial-gradient(circle at 8% 6%, rgba(138, 21, 56, 0.34), rgba(0, 0, 0, 0) 44%),
+    radial-gradient(circle at 94% 96%, rgba(30, 63, 208, 0.3), rgba(0, 0, 0, 0) 46%);
+  --poster-1: #d4d5e2;
+  --poster-2: #2a5bff;
+  --poster-3: #d4d5e2;
+  --poster-4: #1a1a22;
+  --settings-btn-bg: transparent; /* In the Theme 2 design the Settings button is outlined, hollow (Home screen) */
+  --settings-btn-border: var(--border);
+  --settings-btn-fg: var(--text);
+  --logo-bg: linear-gradient(135deg, #8a1538, #1e3fd0);
+  --logo-ink: #ffffff;
+}
+
+/* ---- Theme 3 (theme3): black-and-white, primary color black ---- */
+:root[data-theme='theme3'] {
+  --poster-deco-1: rgba(5, 5, 5, 0.09);
+  --poster-deco-2: rgba(255, 255, 255, 0.08);
+  --poster-deco-dark-1: rgba(217, 217, 217, 0.22);
+  --poster-deco-dark-2: rgba(255, 255, 255, 0.55);
+  --ink-45: rgba(5, 5, 5, 0.45);
+  --bg: #050505;
+  --surface: #101010;
+  --surface-2: #1b1b1b;
+  --surface-hover: #2d2d2d;
+  --border: rgba(255, 255, 255, 0.16);
+  --text: #ffffff;
+  --text-dim: #a8a8a8;
+  --accent: #ffffff;
+  --accent-dim: #a0a0a0;
+  --peach: #d9d9d9;
+  --lavender: #9a9a9a;
+  --mint: #cfcfcf;
+  --ink: #050505;
+  --accent-soft: rgba(255, 255, 255, 0.14);
+  --accent-soft-2: rgba(255, 255, 255, 0.11);
+  --accent-ring: rgba(255, 255, 255, 0.45);
+  --accent-ring-2: rgba(255, 255, 255, 0.21);
+  --line-35: rgba(255, 255, 255, 0.35);
+  --line-25: rgba(255, 255, 255, 0.25);
+  --line-10: rgba(255, 255, 255, 0.1);
+  --line-75: rgba(255, 255, 255, 0.75);
+  --bar-bg: rgba(5, 5, 5, 0.88);
+  --track-dark: rgba(5, 5, 5, 0.35);
+  --deco-1: rgba(255, 255, 255, 0.1);
+  --deco-2: rgba(255, 255, 255, 0.08);
+  --ok-strong: #9ed9b8;
+  --muted: #6e6e6e;
+  --on-card: #ffffff;
+  --on-card-dim: #d9d9d9;
+  --on-card-strong: #ededed;
+  --loading-text: #ededed;
+  --video-a: #4a4a4a;
+  --video-b: #0e0e0e;
+  --card-live: linear-gradient(155deg, #3c3c3c 0%, #121212 100%);
+  --card-series: linear-gradient(155deg, #666666 0%, #262626 100%);
+  --card-movies: linear-gradient(155deg, #1c1c1c 0%, #505050 100%);
+  --app-bg-image: radial-gradient(circle at 8% 6%, rgba(255, 255, 255, 0.07), rgba(0, 0, 0, 0) 44%),
+    radial-gradient(circle at 94% 96%, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0) 46%);
+  --poster-1: #f2f2f2;
+  --poster-2: #9a9a9a;
+  --poster-3: #cfcfcf;
+  --poster-4: #1b1b1b;
+}
+
+/* ---- Theme 4 (theme4): navy-yellow, primary color navy ---- */
+:root[data-theme='theme4'] {
+  --poster-deco-1: rgba(8, 23, 72, 0.09);
+  --poster-deco-2: rgba(255, 255, 255, 0.08);
+  --poster-deco-dark-1: rgba(255, 230, 128, 0.22);
+  --poster-deco-dark-2: rgba(255, 214, 10, 0.55);
+  --ink-45: rgba(8, 23, 72, 0.45);
+  --bg: #081748;
+  --surface: #0f2468;
+  --surface-2: #183080;
+  --surface-hover: #2a418a;
+  --border: rgba(255, 255, 255, 0.16);
+  --text: #ffffff;
+  --text-dim: #b2bce0;
+  --accent: #ffd60a;
+  --accent-dim: #a18d22;
+  --peach: #ffe680;
+  --lavender: #4f73e0;
+  --mint: #e4e9f8;
+  --ink: #081748;
+  --accent-soft: rgba(255, 214, 10, 0.18);
+  --accent-soft-2: rgba(255, 214, 10, 0.14);
+  --accent-ring: rgba(255, 214, 10, 0.45);
+  --accent-ring-2: rgba(255, 214, 10, 0.27);
+  --line-35: rgba(255, 255, 255, 0.35);
+  --line-25: rgba(255, 255, 255, 0.25);
+  --line-10: rgba(255, 255, 255, 0.1);
+  --line-75: rgba(255, 255, 255, 0.75);
+  --bar-bg: rgba(8, 23, 72, 0.88);
+  --track-dark: rgba(8, 23, 72, 0.35);
+  --deco-1: rgba(255, 255, 255, 0.1);
+  --deco-2: rgba(255, 255, 255, 0.08);
+  --ok-strong: #9ed9b8;
+  --muted: #7683b8;
+  --on-card: #ffffff;
+  --on-card-dim: #ffe680;
+  --on-card-strong: #fff1b0;
+  --loading-text: #fff1b0;
+  --video-a: #1a3fb0;
+  --video-b: #050e33;
+  --card-live: linear-gradient(155deg, #1a3fb0 0%, #0a1e66 100%);
+  --card-series: linear-gradient(155deg, #2b55d0 0%, #14308f 100%);
+  --card-movies: linear-gradient(155deg, #0c2175 0%, #2b55d0 100%);
+  --app-bg-image: radial-gradient(circle at 8% 6%, rgba(43, 85, 208, 0.45), rgba(0, 0, 0, 0) 44%),
+    radial-gradient(circle at 94% 96%, rgba(255, 214, 10, 0.1), rgba(0, 0, 0, 0) 46%);
+  --poster-1: #ffd60a;
+  --poster-2: #4f73e0;
+  --poster-3: #e4e9f8;
+  --poster-4: #183080;
+}
+
+/* ---- Theme 5 (theme5): red-yellow, primary color red ---- */
+:root[data-theme='theme5'] {
+  --poster-deco-1: rgba(42, 5, 16, 0.09);
+  --poster-deco-2: rgba(255, 255, 255, 0.08);
+  --poster-deco-dark-1: rgba(255, 221, 122, 0.22);
+  --poster-deco-dark-2: rgba(255, 194, 14, 0.55);
+  --ink-45: rgba(42, 5, 16, 0.45);
+  --bg: #2a0510;
+  --surface: #40091a;
+  --surface-2: #561126;
+  --surface-hover: #642437;
+  --border: rgba(255, 255, 255, 0.16);
+  --text: #ffffff;
+  --text-dim: #e0b8c0;
+  --accent: #ffc20e;
+  --accent-dim: #ae7a0f;
+  --peach: #ffdd7a;
+  --lavender: #f0305e;
+  --mint: #f3e6c4;
+  --ink: #2a0510;
+  --accent-soft: rgba(255, 194, 14, 0.18);
+  --accent-soft-2: rgba(255, 194, 14, 0.14);
+  --accent-ring: rgba(255, 194, 14, 0.45);
+  --accent-ring-2: rgba(255, 194, 14, 0.27);
+  --line-35: rgba(255, 255, 255, 0.35);
+  --line-25: rgba(255, 255, 255, 0.25);
+  --line-10: rgba(255, 255, 255, 0.1);
+  --line-75: rgba(255, 255, 255, 0.75);
+  --bar-bg: rgba(42, 5, 16, 0.88);
+  --track-dark: rgba(42, 5, 16, 0.35);
+  --deco-1: rgba(255, 255, 255, 0.1);
+  --deco-2: rgba(255, 255, 255, 0.08);
+  --ok-strong: #9ed9b8;
+  --muted: #a87a85;
+  --on-card: #ffffff;
+  --on-card-dim: #ffdd7a;
+  --on-card-strong: #ffebb0;
+  --loading-text: #ffebb0;
+  --video-a: #8a1230;
+  --video-b: #1a0309;
+  --card-live: linear-gradient(155deg, #d0083f 0%, #7a0322 100%);
+  --card-series: linear-gradient(155deg, #a90432 0%, #5e0219 100%);
+  --card-movies: linear-gradient(155deg, #7a0322 0%, #d0083f 100%);
+  --app-bg-image: radial-gradient(circle at 8% 6%, rgba(208, 8, 63, 0.45), rgba(0, 0, 0, 0) 44%),
+    radial-gradient(circle at 94% 96%, rgba(255, 194, 14, 0.1), rgba(0, 0, 0, 0) 46%);
+  --poster-1: #ffc20e;
+  --poster-2: #f0305e;
+  --poster-3: #f3e6c4;
+  --poster-4: #561126;
+}
+
+/* ---- Theme 1 (theme6): red background, white focus/accent, red gradient cards, red-white posters ---- */
+:root[data-theme='theme6'] {
+  --poster-deco-1: rgba(142, 10, 20, 0.09);
+  --poster-deco-2: rgba(255, 255, 255, 0.08);
+  --poster-deco-dark-1: rgba(255, 255, 255, 0.22);
+  --poster-deco-dark-2: rgba(255, 255, 255, 0.55);
+  --ink-45: rgba(142, 10, 20, 0.45);
+  --bg: #8e0a14;
+  --surface: #b30d1a;
+  --surface-2: #cc1626;
+  --surface-hover: #d6303d;
+  --border: rgba(255, 255, 255, 0.16);
+  --text: #ffffff;
+  --text-dim: #f2c6ca;
+  --accent: #ffffff;
+  --accent-dim: #e8a9ae;
+  --peach: #ffc9ce;
+  --lavender: #f2f2f2;
+  --mint: #ffffff;
+  --ink: #8e0a14;
+  --accent-soft: rgba(255, 255, 255, 0.18);
+  --accent-soft-2: rgba(255, 255, 255, 0.14);
+  --accent-ring: rgba(255, 255, 255, 0.45);
+  --accent-ring-2: rgba(255, 255, 255, 0.27);
+  --line-35: rgba(255, 255, 255, 0.35);
+  --line-25: rgba(255, 255, 255, 0.25);
+  --line-10: rgba(255, 255, 255, 0.1);
+  --line-75: rgba(255, 255, 255, 0.75);
+  --bar-bg: rgba(142, 10, 20, 0.88);
+  --track-dark: rgba(142, 10, 20, 0.35);
+  --deco-1: rgba(255, 255, 255, 0.1);
+  --deco-2: rgba(255, 255, 255, 0.08);
+  --error: #ffd1d1;
+  --danger: #ffd1c2;
+  --ok: #9ed9b8;
+  --ok-strong: #9ed9b8;
+  --muted: #e39aa0;
+  --on-card: #ffffff;
+  --on-card-dim: #ffffff;
+  --on-card-strong: #ffffff;
+  --loading-text: #ffe3e5;
+  --video-a: #a30b16;
+  --video-b: #3a0509;
+  --card-live: linear-gradient(155deg, #f01b2b 0%, #a30b16 100%);
+  --card-series: linear-gradient(155deg, #c70f1c 0%, #7c0710 100%);
+  --card-movies: linear-gradient(155deg, #a30b16 0%, #e01626 100%);
+  --app-bg-image: radial-gradient(circle at 8% 6%, rgba(255, 80, 90, 0.35), rgba(0, 0, 0, 0) 44%),
+    radial-gradient(circle at 94% 96%, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0) 46%);
+  --poster-1: #f2f2f2;
+  --poster-2: #ffffff;
+  --poster-3: #ffc9ce;
+  --poster-4: #cc1626;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Tizen AVPlay (movies/series) renders video in a separate layer behind the page: it must be transparent while playing. */
+html.avplay-active,
+html.avplay-active body {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  background-image: var(--app-bg-image);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+  overflow: hidden;
+}
+
+/* Fixed 1920x1080 "stage" — a real TV output is already this size; on a desktop browser it's scaled and
+   centered to the window size by scaleToFit.ts (see that file): so even when the window/screen is smaller
+   than 1920x1080 or has a different aspect ratio, elements like the top title bar are never clipped at the edge. */
+#app {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: center center;
+}
+
+[data-focus-id] {
+  outline: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+[data-focus-id].focused {
+  transform: scale(1.025);
+  box-shadow: 0 0 0 6px var(--bg), 0 0 0 12px var(--accent);
+  z-index: 1;
+}
+
+.screen {
+  width: 1920px;
+  height: 1080px;
+  padding: 64px;
+  display: flex;
+  flex-direction: column;
+}
+
+.title-lg {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+}
+
+.title-md {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 28px 32px;
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+
+.button.active {
+  background: var(--accent-dim);
+}
+
+.button {
+  background: var(--surface-2);
+  color: var(--text);
+  border: none;
+  border-radius: 12px;
+  padding: 18px 36px;
+  font-size: var(--fs-md);
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.status-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+
+.status-bar .status-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  flex: none;
+}
+
+.status-bar.loading .status-dot,
+.status-bar.reconnecting .status-dot {
+  background: var(--warn);
+}
+
+.status-bar.error {
+  color: var(--error);
+}
+.status-bar.error .status-dot {
+  background: var(--error);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex: 1;
+  color: var(--text-dim);
+  font-size: var(--fs-md);
+  text-align: center;
+}
+
+.empty-state svg {
+  opacity: 0.5;
+}
+
+/* Visually hides the scrollbar in scrollable lists (arrow-key scrolling/scrollIntoView
+   still works, only the bar is invisible). */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.channel-logo {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  margin-right: 12px;
+  background: var(--surface-2);
+  overflow: hidden;
+  position: relative;
+}
+.list-row.focused .channel-logo {
+  border-color: var(--ink-45);
+}
+/* If the logo has loaded, there's no box border/background: the content is directly the logo itself. */
+.channel-logo.has-logo,
+.list-row.focused .channel-logo.has-logo {
+  background: transparent;
+  border-color: transparent;
+}
+.channel-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.favorite-star {
+  color: var(--accent);
+  margin-left: auto;
+  padding-left: 10px;
+  flex: none;
+}
+
+/* Multiple rows inside a single .card box (like category/channel lists) —
+   each row isn't its own box; it's a single list with a thin divider line between rows. */
+.list-row {
+  height: 78px;
+  padding: 0 16px;
+  cursor: pointer;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  flex: none;
+  font-size: 26px;
+  font-weight: 600;
+  overflow: hidden;
+}
+.list-row.cat-row {
+  height: 64px;
+  padding: 0 18px;
+}
+
+.row-number {
+  flex: none;
+  width: 28px;
+  margin-right: 8px;
+  text-align: right;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.channel-initials {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+/* The "now playing" indicator only appears on the active channel's row. */
+.row-eq {
+  display: none;
+  flex: none;
+  margin-left: 10px;
+  color: var(--accent);
+}
+.list-row.active .row-eq {
+  display: flex;
+}
+.list-row.focused .row-eq {
+  color: var(--bg);
+}
+
+/* A persistent highlight so that "which category is open / which channel is playing" information isn't
+   lost even when focus moves to another group (e.g. the preview/right panel) — deliberately kept fainter
+   than real keyboard focus (.focused, solid orange); when both apply at once (focus is still on that row),
+   the .focused rule wins because it comes later in the cascade. */
+.list-row.active {
+  background: var(--accent-soft);
+  color: var(--peach);
+  font-weight: 700;
+}
+
+/* The generic [data-focus-id].focused ring effect was being clipped at the edge of the list box
+   (the left/right box-shadow extended past the visible area) — for rows we use a solid orange
+   background instead, which has no risk of clipping. Text color contrasts against --bg (dark) —
+   white text wasn't readable enough on top of orange. */
+.list-row.focused {
+  transform: none;
+  box-shadow: none;
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.list-row.focused .favorite-star,
+.list-row.focused .row-number {
+  color: var(--bg);
+}
+
+/* Orange ring when the search box is focused (not scaled, so it isn't clipped at the edge). */
+[data-focus-id='search'].focused {
+  transform: none;
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+
+/* Since elements inside the peach preview card would be clipped at the card edge, the focus ring
+   is drawn inward rather than outward. */
+.preview-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  /* Same rounding (28px) as the card's top corners: so the ring isn't clipped and distorted at the corner. */
+  border-radius: 28px 28px 0 0;
+}
+.preview-ring-badge {
+  display: none;
+  position: absolute;
+  right: 28px;
+  bottom: 28px;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 24px;
+  border-radius: 28px;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 26px;
+  font-weight: 800;
+}
+.preview-box.focused {
+  transform: none;
+  box-shadow: none;
+}
+.preview-box.focused .preview-ring {
+  box-shadow: inset 0 0 0 8px var(--accent);
+}
+.preview-box.focused .preview-ring-badge {
+  display: flex;
+}
+
+.fav-btn {
+  margin-left: auto;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 52px;
+  padding: 0 24px;
+  border-radius: 26px;
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  color: var(--on-card);
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px var(--on-card);
+}
+.fav-btn.focused {
+  transform: none;
+  background: var(--accent);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.row-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.row-label.marquee {
+  text-overflow: clip;
+}
+/* Only the inner text scrolls; the label box stays fixed, so it doesn't overflow onto the number/logo. */
+.row-label .marquee-inner {
+  display: inline-block;
+}
+.row-label.marquee .marquee-inner {
+  animation: marquee-scroll var(--marquee-duration, 6s) ease-in-out infinite;
+}
+
+@keyframes marquee-scroll {
+  0%, 10% { transform: translateX(0); }
+  45%, 55% { transform: translateX(var(--marquee-distance, 0px)); }
+  90%, 100% { transform: translateX(0); }
+}
+
+
+/* ---- Settings (design J): framed card + left menu + right panel ---- */
+.settings-frame {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  display: flex;
+}
+.settings-nav {
+  width: 560px;
+  flex: none;
+  padding-right: 32px;
+  border-right: 1.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+.settings-nav > * + * {
+  margin-top: 8px;
+}
+.settings-nav-title {
+  display: flex;
+  align-items: center;
+  height: 80px;
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.settings-rule {
+  height: 1.5px;
+  flex: none;
+  background: var(--border);
+}
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  height: 96px;
+  flex: none;
+  padding: 0 24px;
+  border-radius: 20px;
+  font-size: 28px;
+  font-weight: 600;
+}
+.settings-nav-item svg {
+  margin-right: 20px;
+}
+.settings-nav-item.active {
+  background: var(--accent-soft);
+  color: var(--peach);
+  font-weight: 800;
+}
+.settings-panel {
+  flex: 1;
+  min-width: 0;
+  padding-left: 48px;
+  display: flex;
+  flex-direction: column;
+}
+.settings-panel > * + * {
+  margin-top: 16px;
+}
+.settings-title {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.settings-subtitle {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 84px;
+  padding: 0 48px;
+  border-radius: 20px;
+  font-size: 28px;
+  font-weight: 800;
+}
+.settings-btn svg {
+  margin-right: 14px;
+}
+.settings-btn.primary {
+  background: var(--accent);
+  color: var(--ink);
+}
+.settings-btn.secondary {
+  border: 2px solid var(--border);
+  font-weight: 700;
+}
+.settings-btn.danger {
+  border: 2px solid var(--danger);
+  color: var(--danger);
+  margin-left: auto;
+}
+.conn-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 32px;
+  border: 1.5px solid var(--border);
+  border-radius: 24px;
+  background: var(--bg);
+}
+.field {
+  display: flex;
+  align-items: center;
+  height: 88px;
+  border-radius: 20px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px var(--border);
+}
+.field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 28px;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-family: inherit;
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--text);
+  caret-color: var(--accent);
+}
+.seg-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 112px;
+  padding: 0 32px;
+  border-radius: 24px;
+  border: 2px solid var(--border);
+}
+.seg-option.on {
+  border-color: var(--accent);
+  background: var(--accent-soft-2);
+}
+.switch-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 28px 36px;
+  border-radius: 24px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px var(--border);
+}
+.switch-track {
+  position: relative;
+  width: 132px;
+  height: 72px;
+  border-radius: 36px;
+  background: var(--surface-hover);
+}
+.switch-track.on {
+  background: var(--accent);
+}
+.switch-knob {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background: var(--bg);
+  transition: left 0.15s ease;
+}
+.switch-track.on .switch-knob {
+  left: 66px;
+}
+.theme-card {
+  display: flex;
+  flex-direction: column;
+  padding: 28px 32px;
+  border-radius: 24px;
+  box-shadow: inset 0 0 0 2px var(--border);
+}
+.theme-card > * + * {
+  margin-top: 24px;
+}
+.theme-card.on {
+  background: var(--accent-soft-2);
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+.lang-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  height: 112px;
+  padding: 0 36px;
+  border-radius: 24px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px var(--border);
+}
+.lang-card.on {
+  background: var(--accent-soft-2);
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+.lang-card.soon {
+  color: var(--muted);
+}
+.lang-card.soon span {
+  color: var(--muted) !important;
+}
+.soon-pill {
+  flex: none;
+  height: 40px;
+  padding: 0 18px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  border: 1.5px solid var(--muted);
+  font-size: 22px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+}
+.theme-card.soon {
+  box-shadow: none;
+  border: 2px dashed var(--border);
+  color: var(--muted);
+}
+
+/* Live TV search box: a thin border normally, an inner ring (below) when focused. */
+.live-search {
+  box-shadow: inset 0 0 0 2px var(--border);
+}
+
+/* On fields/switches/cards the focus ring is drawn inward (so it doesn't overflow the edge border). */
+.live-search.focused,
+.field.focused,
+.switch-card.focused,
+.theme-card.focused,
+.lang-card.focused,
+.seg-option.focused,
+.conn-card.focused,
+.settings-nav-item.focused {
+  transform: none;
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+
+/* Favorites star on the category row: doesn't disappear on the orange background when focused. */
+.list-row.focused .cat-star {
+  color: var(--bg) !important;
+}
+
+/* Empty state (favorites / EPG): dashed circle + title + subtitle. */
+.empty-ring {
+  width: 120px;
+  height: 120px;
+  flex: none;
+  border: 2px dashed var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+}
+.empty-title {
+  margin-top: 20px;
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.empty-sub {
+  margin-top: 20px;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-dim);
+}
+
+/* Search box: the native (browser) clear button is hidden; .search-clear is used instead. */
+input[type='search']::-webkit-search-cancel-button,
+input[type='search']::-webkit-search-decoration {
+  -webkit-appearance: none;
+  display: none;
+}
+.search-clear {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 0;
+  border-radius: 28px;
+  background: var(--line-10);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Search match: orange highlight; inherits color on the focused (orange-background) row so it doesn't disappear. */
+.row-label .hl {
+  color: var(--accent);
+  font-weight: 800;
+}
+.list-row.focused .row-label .hl {
+  color: inherit;
+}
+
+/* ---- Filmler / Diziler gezgini (bkz. vodBrowser.ts) ---- */
+.vod-count {
+  margin-left: auto;
+  padding-left: 12px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.list-row.active .vod-count {
+  color: var(--peach);
+}
+.list-row.focused .vod-count {
+  color: var(--bg);
+}
+.vod-poster {
+  position: relative;
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.vod-poster.p23 {
+  padding-top: 150%;
+}
+.vod-poster.p169 {
+  padding-top: 56.25%;
+}
+.vod-poster .vod-img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.vod-poster::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 20px;
+  pointer-events: none;
+}
+.vod-card.focused .vod-poster::after {
+  box-shadow: inset 0 0 0 6px var(--accent);
+}
+.vod-title {
+  font-size: 26px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vod-card.focused .vod-title {
+  color: var(--peach);
+  font-weight: 800;
+}
+.vod-sub {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vod-star {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background: var(--bg);
+  color: var(--accent);
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vod-search input {
+  all: unset;
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  font-family: inherit;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text);
+  caret-color: var(--accent);
+}
+.vod-search.focused {
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+.vod-sort {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 80px;
+  padding: 0 28px;
+  border: 2px solid var(--border);
+  border-radius: 40px;
+  font-size: 26px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.vod-sort.focused {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+.vod-sort-label {
+  color: var(--text-dim);
+  font-weight: 600;
+  margin-right: 12px;
+}
+.vod-sort.focused .vod-sort-label {
+  color: var(--bg);
+}
+.vod-sort.open {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--peach);
+}
+.vod-sort.open .vod-sort-label {
+  color: var(--peach);
+}
+.vod-sort-panel {
+  position: absolute;
+  right: 0;
+  top: 92px;
+  z-index: 2;
+  width: 440px;
+  box-sizing: border-box;
+  padding: 14px;
+  border-radius: 28px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  flex-direction: column;
+}
+.vod-sort-title {
+  padding: 8px 22px 10px;
+  margin-bottom: 6px;
+  font-size: 26px;
+  font-weight: 800;
+  border-bottom: 1.5px solid var(--border);
+}
+.vod-sort-opt {
+  display: flex;
+  align-items: center;
+  height: 72px;
+  flex: none;
+  box-sizing: border-box;
+  margin-bottom: 6px;
+  padding: 0 22px;
+  border-radius: 18px;
+  font-size: 28px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.vod-sort-opt.selected {
+  font-weight: 800;
+}
+.vod-sort-opt.focused {
+  transform: none;
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 4px var(--accent);
+  color: var(--peach);
+}
+.vod-fake-caret {
+  display: none;
+  flex: none;
+  width: 3px;
+  height: 38px;
+  margin-right: -8px;
+  background: var(--accent);
+}
+.vod-search.focused:not(.editing) .vod-fake-caret {
+  display: block;
+}
+.vod-play-badge {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vod-resume-pill {
+  display: none;
+  position: absolute;
+  left: 14px;
+  bottom: 26px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 20px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 22px;
+  font-weight: 800;
+  align-items: center;
+}
+.vod-card.focused .vod-resume-pill {
+  display: flex;
+}
+.vod-star.left {
+  right: auto;
+  left: 12px;
+}
+
+/* ---- Series detail (see showDetail.ts) ---- */
+.vod-btn {
+  display: flex;
+  align-items: center;
+  height: 76px;
+  padding: 0 32px;
+  box-sizing: border-box;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  font-size: 28px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.vod-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 800;
+  padding: 0 36px;
+}
+.vod-btn.focused {
+  box-shadow: 0 0 0 4px var(--bg), 0 0 0 8px var(--accent);
+}
+.vod-tab {
+  display: flex;
+  align-items: center;
+  height: 60px;
+  padding: 0 28px;
+  box-sizing: border-box;
+  border: 2px solid var(--border);
+  border-radius: 30px;
+  font-size: 26px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.vod-tab.active {
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--peach);
+  font-weight: 800;
+}
+.vod-tab.focused {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+.vod-ep {
+  display: flex;
+  align-items: center;
+  height: 104px;
+  flex: none;
+  box-sizing: border-box;
+  padding: 0 16px;
+  margin-bottom: 6px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+.vod-ep.focused {
+  box-shadow: inset 0 0 0 4px var(--accent);
+  background: var(--accent-soft);
+}
+.vod-ep.focused .vod-ep-name,
+.vod-ep.focused .vod-ep-num,
+.vod-ep.focused .vod-ep-status {
+  color: var(--peach);
+}
+.vod-thumb {
+  position: relative;
+  width: 160px;
+  height: 90px;
+  flex: none;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.vod-thumb .vod-img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---- Movie/series player bar (see playerOverlay.ts) ---- */
+.vod-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  padding: 28px 72px 32px;
+  background: var(--bar-bg);
+  border-top: 1.5px solid var(--border);
+  flex-direction: column;
+  transition: opacity 0.5s;
+}
+.vod-seek-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.vod-time {
+  width: 96px;
+  font-size: 26px;
+  font-weight: 800;
+  flex: none;
+}
+.vod-time.right {
+  text-align: right;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.vod-track {
+  position: relative;
+  flex: 1;
+  height: 12px;
+  margin: 0 24px;
+  border-radius: 6px;
+  background: var(--line-25);
+}
+.vod-track-fill {
+  width: 0;
+  height: 100%;
+  border-radius: 6px;
+  background: var(--accent);
+}
+.vod-track-knob {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  border-radius: 16px;
+  background: var(--poster-1); /* the seek marker is in the poster background color (peach in Default) */
+  box-shadow: 0 0 0 6px var(--accent-ring);
+}
+.vod-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.vod-bar-title {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vod-bar-sub {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vod-ctls {
+  display: flex;
+  align-items: center;
+  flex: none;
+  margin: 0 32px;
+}
+.vod-ctl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 72px;
+  height: 72px;
+  flex: none;
+  margin: 0 11px;
+  border-radius: 36px;
+  border: 2px solid var(--line-35);
+  color: var(--text);
+}
+.vod-ctl.big {
+  width: 96px;
+  height: 96px;
+  border-radius: 48px;
+  border: 0;
+  background: var(--accent);
+  color: var(--bg);
+}
+.vod-ctl.focused {
+  box-shadow: 0 0 0 4px var(--bg), 0 0 0 8px var(--accent);
+}
+.vod-bar-stats {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* The generic [data-focus-id].focused effect (scale-up + outer ring) was drawing a rectangular frame
+   that also enclosed the card's title and got clipped inside the scrolling box: these components use
+   their own focus appearance instead. */
+.vod-card.focused,
+.vod-search.focused,
+.vod-sort.focused,
+.vod-tab.focused,
+.vod-ep.focused,
+.vod-btn.focused {
+  transform: none;
+}
+.vod-card.focused,
+.vod-sort.focused,
+.vod-tab.focused {
+  box-shadow: none;
+}
+.vod-search {
+  box-shadow: inset 0 0 0 2px var(--border);
+}
+.vod-search.focused {
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+
+/* ---- Player: pause badge, ±10s indicator, highlighted button (Movie Player variants) ---- */
+.vod-paused-badge {
+  position: absolute;
+  left: 50%;
+  top: 432px;
+  width: 176px;
+  height: 176px;
+  margin: -88px 0 0 -88px;
+  border-radius: 88px;
+  background: var(--bar-bg);
+  border: 1.5px solid var(--border);
+  align-items: center;
+  justify-content: center;
+}
+.vod-seek-ind {
+  position: absolute;
+  left: 160px;
+  top: 432px;
+  height: 152px;
+  margin-top: -76px;
+  padding: 0 44px;
+  box-sizing: border-box;
+  border-radius: 76px;
+  background: var(--bar-bg);
+  border: 1.5px solid var(--border);
+  align-items: center;
+  color: var(--peach);
+  font-size: 44px;
+  font-weight: 800;
+}
+.vod-seek-ind.right {
+  left: auto;
+  right: 160px;
+}
+.vod-seek-ind span {
+  margin-left: 20px;
+}
+.vod-ctl.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+.vod-track-toast {
+  position: absolute;
+  top: 56px;
+  right: 56px;
+  padding: 20px 32px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: var(--bar-bg);
+  border: 1.5px solid var(--border);
+  color: var(--peach);
+  font-size: 32px;
+  font-weight: 800;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.vod-track-toast.show {
+  opacity: 1;
+}
+
+/* ---- Connections list / form (see settings.ts, connections.ts) ---- */
+.conn-badge {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 18px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  border: 1.5px solid var(--muted);
+  color: var(--text-dim);
+  font-size: 22px;
+  font-weight: 800;
+}
+.conn-badge.active {
+  border-color: transparent;
+  background: var(--accent-soft);
+  color: var(--peach);
+}
+.conn-badge svg {
+  margin-right: 8px;
+  color: var(--accent);
+}
+.field.error {
+  box-shadow: inset 0 0 0 4px var(--danger);
+}
+.field.error.focused {
+  box-shadow: inset 0 0 0 4px var(--danger);
+}
+.field-error {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--danger);
+}
+.field-error svg {
+  margin-right: 10px;
+}
+.seg-option.disabled {
+  border: 2px dashed var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.seg-option.disabled .seg-pill {
+  padding: 6px 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--muted);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* ---- Player: progress bar selected / scrubbing (SeriesPlayerSeek, MoviePlayerSeek) ---- */
+.vod-time.scrub {
+  color: var(--peach);
+}
+.vod-track.scrub {
+  height: 20px;
+  border-radius: 10px;
+}
+.vod-track.scrub .vod-track-fill {
+  border-radius: 10px;
+}
+.vod-track.scrub .vod-track-knob {
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
+  border-radius: 24px;
+  box-shadow: 0 0 0 5px var(--bg), 0 0 0 11px var(--accent);
+}
+.vod-tick,
+.vod-scrub-pop {
+  display: none;
+}
+.vod-track.scrub .vod-tick {
+  display: block;
+  position: absolute;
+  top: 50%;
+  width: 4px;
+  height: 36px;
+  margin: -18px 0 0 -2px;
+  border-radius: 2px;
+  background: var(--line-75);
+}
+.vod-track.scrub .vod-scrub-pop {
+  display: flex;
+  position: absolute;
+  bottom: 56px;
+  flex-direction: column;
+  align-items: center;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+.vod-scrub-bubble {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 22px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 26px;
+  font-weight: 800;
+}
+.vod-ctl.big.outlined {
+  background: transparent;
+  border: 2px solid var(--line-35);
+  color: var(--text);
+}
+
+/* ---- Ebeveyn kilidi (SettingsParental*) ---- */
+.switch-card.sm {
+  height: 96px;
+  padding: 0 32px;
+  border-radius: 20px;
+}
+.switch-card.sm .switch-track {
+  width: 104px;
+  height: 56px;
+  border-radius: 28px;
+}
+.switch-card.sm .switch-knob {
+  top: 6px;
+  left: 6px;
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+}
+.switch-card.sm .switch-track.on .switch-knob {
+  left: 54px;
+}
+.switch-card.dim,
+.dim {
+  opacity: 0.4;
+}
+.pin-boxes {
+  display: flex;
+}
+.pin-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 112px;
+  margin: 0 10px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px var(--border);
+}
+.pin-box.current {
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+.pin-box.error {
+  box-shadow: inset 0 0 0 4px var(--danger);
+}
+.pin-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--text);
+}
+.pin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 168px);
+  grid-gap: 16px;
+}
+.pin-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88px;
+  border-radius: 20px;
+  box-sizing: border-box;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px var(--border);
+  font-size: 38px;
+  font-weight: 800;
+}
+.pin-key.ghost {
+  background: transparent;
+  box-shadow: none;
+  border: 2px solid var(--border);
+  font-size: 26px;
+  font-weight: 700;
+}
+.pin-key.ok {
+  background: var(--accent);
+  box-shadow: none;
+  color: var(--ink);
+  font-size: 28px;
+}
+.pin-key.disabled {
+  opacity: 0.4;
+}
+.pin-key.focused {
+  transform: none;
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 4px var(--accent);
+  color: var(--peach);
+}
+.pin-key.ok.focused {
+  background: var(--accent);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 4px var(--peach);
+}
+.pin-key.ghost.focused {
+  background: var(--accent-soft);
+}
+.pin-message {
+  min-height: 34px;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--danger);
+}
+.pin-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pin-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 64px;
+  border-radius: 40px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+}
+
+/* Parental lock: a lock icon on a locked category row (Live TV list; in Movies/Series it takes the number's place). */
+.cat-lock {
+  display: flex;
+  flex: none;
+  margin-left: auto;
+  color: var(--peach);
+}
+.list-row.focused .cat-lock,
+.list-row.active .cat-lock {
+  color: var(--bg);
+}
+.list-row.cat-row .vod-count svg {
+  display: block;
+}
+
+/* ---- Player: audio / subtitle pills and selection menu (SeriesPlayerAudio / SeriesPlayerSubtitle) ---- */
+.vod-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+.vod-pill-wrap {
+  position: relative;
+  flex: none;
+  margin-right: 14px;
+}
+.vod-pill {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 22px;
+  box-sizing: border-box;
+  border: 2px solid var(--line-35);
+  border-radius: 32px;
+  font-size: 24px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.vod-pill.focused {
+  transform: none;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--peach);
+  box-shadow: none;
+}
+.vod-menu {
+  position: absolute;
+  right: 0;
+  bottom: 84px;
+  width: 460px;
+  box-sizing: border-box;
+  padding: 14px;
+  flex-direction: column;
+  border-radius: 28px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  z-index: 5;
+}
+.vod-menu-title {
+  padding: 8px 22px 10px;
+  margin-bottom: 6px;
+  font-size: 26px;
+  font-weight: 800;
+  border-bottom: 1.5px solid var(--border);
+}
+.vod-menu-row {
+  display: flex;
+  align-items: center;
+  height: 80px;
+  flex: none;
+  box-sizing: border-box;
+  padding: 0 22px;
+  margin-bottom: 6px;
+  border-radius: 18px;
+}
+.vod-menu-row.focused {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+.vod-menu-label {
+  font-size: 28px;
+  font-weight: 700;
+}
+.vod-menu-label.on,
+.vod-menu-row.focused .vod-menu-label {
+  font-weight: 800;
+}
+.vod-menu-row.focused .vod-menu-label {
+  color: var(--peach);
+}
+.vod-menu-detail {
+  margin-top: 2px;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.vod-caption {
+  position: absolute;
+  left: 160px;
+  right: 160px;
+  bottom: 110px;
+  text-align: center;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+  white-space: pre-line;
+}
+
+/* "New" badge: top-left on the poster of a recently added movie/series (Movies design). */
+.vod-new {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  background: var(--bg);
+  color: var(--peach);
+  font-size: 22px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+}
+
+/* ---- Poster placeholder decorations (see posterDeco.ts): 4 patterns, light colors on a dark poster ---- */
+.vod-deco {
+  position: absolute;
+  pointer-events: none;
+}
+.vod-deco.s1 {
+  background: var(--poster-deco-1);
+}
+.vod-deco.s2 {
+  background: var(--poster-deco-2);
+}
+.vod-poster.dark .vod-deco.s1 {
+  background: var(--poster-deco-dark-1);
+}
+.vod-poster.dark .vod-deco.s2 {
+  background: var(--poster-deco-dark-2);
+}
+.pat-0 .s1 { right: -70px; bottom: -70px; width: 240px; height: 240px; border-radius: 50%; }
+.pat-0 .s2 { left: 26px; top: 70px; width: 70px; height: 70px; border-radius: 50%; }
+.pat-1 .s1 { left: -40px; top: 90px; width: 340px; height: 90px; -webkit-transform: rotate(-24deg); transform: rotate(-24deg); }
+.pat-1 .s2 { right: 24px; bottom: 110px; width: 56px; height: 56px; border-radius: 14px; }
+.pat-2 .s1 { left: 50%; top: -60px; width: 220px; height: 220px; margin-left: -110px; border-radius: 50%; }
+.pat-2 .s2 { left: 0; right: 0; bottom: 0; height: 34%; }
+.pat-3 .s1 { left: -60px; bottom: -60px; width: 220px; height: 220px; border-radius: 50%; }
+.pat-3 .s2 { right: -30px; top: 60px; width: 130px; height: 130px; border-radius: 50%; }
+/* On a 16:9 (Continue Watching) poster, two patterns are positioned slightly differently. */
+.p169.pat-1 .s2 { bottom: 40px; }
+.p169.pat-2 .s1 { margin-left: -40px; }
+/* Episode thumbnail: a single circle at the bottom left. */
+.vod-deco.thumb-circle {
+  left: -20px;
+  bottom: -30px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: var(--poster-deco-1);
+}
+
+/* The 16:9 poster in series detail: shapes keep the same positions as on a 2:3 poster. */
+.p169.detail.pat-1 .s2 { bottom: 110px; }

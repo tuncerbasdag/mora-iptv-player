@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 1024 1024%27%3E%3Crect width=%271024%27 height=%271024%27 rx=%27230%27 fill=%27%23111%27/%3E%3Cg transform=%27translate(512 512) translate(-590 -450)%27 fill=%27%23fff%27 stroke=%27%23fff%27%3E%3Cpath d=%27M286 372v400l340-200z%27 stroke=%27none%27/%3E%3Cpath d=%27M560 252a210 210 0 0 1 210 210%27 fill=%27none%27 stroke-width=%2772%27 stroke-linecap=%27round%27/%3E%3Cpath d=%27M560 128a334 334 0 0 1 334 334%27 fill=%27none%27 stroke-width=%2772%27 stroke-linecap=%27round%27/%3E%3C/g%3E%3C/svg%3E">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mora IPTV Player · Uzaktan Liste Yükle</title>
+<style>
+  :root { --bg:#242323; --surface:#2d2c2c; --border:#4a4845; --text:#f5f1ec; --dim:#b8b1a8; --accent:#e68137; --peach:#f6cba7; --ok:#9ed9b8; --err:#f4a58a; }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',system-ui,sans-serif; }
+  main { width:100%; max-width:520px; }
+  .brand { display:flex; align-items:center; margin-bottom:28px; }
+  .mark { width:48px; height:48px; border-radius:14px; background:var(--accent); display:flex; align-items:center; justify-content:center; margin-right:14px; }
+  .brand b { font-size:28px; font-weight:800; letter-spacing:-.02em; } .brand b span { font-weight:600; color:var(--peach); }
+  .card { background:var(--surface); border:1.5px solid var(--border); border-radius:28px; padding:32px; }
+  h1 { margin:0 0 6px; font-size:26px; font-weight:800; }
+  p.sub { margin:0 0 24px; color:var(--dim); line-height:1.5; }
+  label { display:block; margin:18px 0 8px; font-weight:700; }
+  input { width:100%; height:56px; padding:0 18px; border-radius:16px; border:1.5px solid var(--border); background:var(--bg); color:var(--text); font:inherit; font-size:17px; }
+  input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(230,129,55,.35); }
+  .hint { margin-top:6px; font-size:13px; color:var(--dim); }
+  button { width:100%; height:60px; margin-top:28px; border:0; border-radius:18px; background:var(--accent); color:var(--bg); font:inherit; font-size:18px; font-weight:800; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:default; }
+  #msg { margin-top:18px; min-height:24px; font-weight:700; }
+  #msg.ok { color:var(--ok); } #msg.err { color:var(--err); }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><span class="mark"><svg width="40" height="40" viewBox="0 0 1024 1024" aria-hidden="true"><g transform="translate(512 512) scale(0.9) translate(-590 -450)" fill="#242323" stroke="#242323"><path d="M286 372v400l340-200z" stroke="none"/><path d="M560 252a210 210 0 0 1 210 210" fill="none" stroke-width="72" stroke-linecap="round"/><path d="M560 128a334 334 0 0 1 334 334" fill="none" stroke-width="72" stroke-linecap="round"/></g></svg></span><b>Mora <span>IPTV Player</span></b></div>
+  <form class="card" id="form" autocomplete="off">
+    <h1>Uzaktan liste yükle</h1>
+    <p class="sub">TV'de <b>Ayarlar → Bağlantı Ekle → Uzaktan Yükle</b> ekranını aç. Orada görünen MAC adresi ve PIN'i buraya gir.</p>
+    <label for="mac">MAC adresi</label>
+    <input id="mac" placeholder="AA:BB:CC:DD:EE:FF" maxlength="17" autocapitalize="characters" autocomplete="off" spellcheck="false" pattern="([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}" required>
+    <label for="pin">PIN</label>
+    <input id="pin" placeholder="6 haneli kod" inputmode="numeric" maxlength="6" pattern="\d{6}" required>
+    <label for="url">M3U liste adresi</label>
+    <input id="url" type="url" placeholder="http://sunucu/liste.m3u" required>
+    <label for="name">Liste adı <span style="font-weight:400;color:var(--dim)">(opsiyonel)</span></label>
+    <input id="name" placeholder="Evim" maxlength="60">
+    <button id="send" type="submit">TV'ye gönder</button>
+    <div id="msg" role="status"></div>
+  </form>
+</main>
+<script>
+  const ERRORS = {
+    invalid_mac: 'MAC adresi geçersiz. 12 haneli olmalı.',
+    invalid_url: 'Liste adresi geçersiz. http:// veya https:// ile başlamalı.',
+    not_found: 'Bu MAC için açık bir oturum yok. TV\'de Uzaktan Yükle ekranının açık olduğundan emin ol.',
+    bad_pin: 'PIN yanlış.',
+    locked: 'Çok fazla yanlış deneme. TV\'de Uzaktan Yükle ekranını kapatıp yeniden aç.',
+    rate_limited: 'Çok fazla istek. Biraz bekleyip tekrar dene.',
+  };
+  const $ = (id) => document.getElementById(id);
+
+  // MAC alanı: yalnızca 0-9 A-F, en çok 12 hane, iki hanede bir ":" otomatik eklenir (yapıştırma da dahil).
+  // Sondaki ":" yazılmaz; böylece Backspace ayracı silince takılmaz. İmleç, ortadan düzenlemede yerinde kalır.
+  const macInput = $('mac');
+  function formatMac(raw) {
+    const hex = raw.replace(/[^0-9a-f]/gi, '').toUpperCase().slice(0, 12);
+    return hex.match(/.{1,2}/g)?.join(':') ?? '';
+  }
+  macInput.addEventListener('input', () => {
+    const caret = macInput.selectionStart ?? macInput.value.length;
+    const hexBeforeCaret = macInput.value.slice(0, caret).replace(/[^0-9a-f]/gi, '').length;
+    const formatted = formatMac(macInput.value);
+    macInput.value = formatted;
+    let pos = 0, seen = 0;
+    while (pos < formatted.length && seen < Math.min(hexBeforeCaret, 12)) {
+      if (formatted[pos] !== ':') seen++;
+      pos++;
+    }
+    macInput.setSelectionRange(pos, pos);
+  });
+  $('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = $('msg'), btn = $('send');
+    btn.disabled = true; msg.className = ''; msg.textContent = 'Gönderiliyor...';
+    try {
+      const res = await fetch('/api/push', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ mac: $('mac').value, pin: $('pin').value, url: $('url').value, name: $('name').value }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) { msg.className = 'ok'; msg.textContent = 'Gönderildi. TV birkaç saniye içinde listeyi yükleyecek.'; $('pin').value = ''; }
+      else { msg.className = 'err'; msg.textContent = ERRORS[data.error] || 'Gönderilemedi. Tekrar dene.'; }
+    } catch { msg.className = 'err'; msg.textContent = 'Sunucuya ulaşılamadı.'; }
+    btn.disabled = false;
+  });
+</script>
+</body>
+</html>

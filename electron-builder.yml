@@ -1,0 +1,35 @@
+appId: com.tuncerbasdag.mora-iptv-player
+productName: Mora IPTV Player
+copyright: Copyright (c) 2026 Tuncer Başdağ
+directories:
+  output: release
+  buildResources: build
+# Pakete yalnızca masaüstü kabuğu + web sunucusu + derlenmiş arayüz girer (kaynak kod, testler, Tizen ve portal girmez).
+files:
+  - package.json
+  - LICENSE
+  - THIRD_PARTY_NOTICES.md
+  - apps/desktop/**
+  - "!apps/desktop/test/**"
+  - apps/web/server.mjs
+  - apps/web/public/**
+  - "!apps/web/public/**/*.map"
+asar: true
+# Dosya adları sabit ve boşluksuz: GitHub release varlıkları ve güncelleme dosyaları (latest*.yml) bunlara bakar.
+artifactName: Mora-IPTV-Player-${version}-${os}-${arch}.${ext}
+mac:
+  category: public.app-category.video
+  target:
+    - { target: dmg, arch: [arm64, x64] }
+    - { target: zip, arch: [arm64, x64] } # macOS otomatik güncellemesi zip ister
+win:
+  target:
+    - { target: nsis, arch: [x64] }
+nsis:
+  oneClick: true
+  perMachine: false
+publish:
+  provider: github
+  owner: tuncerbasdag
+  repo: mora-iptv-player
+  releaseType: draft # taslak olarak yüklenir; kontrol edip GitHub'da "Publish" dersin, güncelleme o zaman görünür olur

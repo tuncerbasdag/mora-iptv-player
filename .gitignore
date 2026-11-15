@@ -1,0 +1,62 @@
+node_modules/
+dist/
+apps/tizen/build/
+*.wgt
+.buildResult/
+
+# esbuild çıktıları — packages/ui/src/styles.css ve src/main.ts'ten üretiliyor, kaynak değil.
+apps/web/public/bundle.js
+apps/web/public/bundle.js.map
+apps/web/public/styles.css
+apps/tizen/bundle.js
+apps/tizen/bundle.js.map
+apps/tizen/styles.css
+apps/tizen/LICENSE
+apps/tizen/THIRD_PARTY_NOTICES.md
+
+# VS Code Tizen eklentisinin ürettikleri (paket kopyası, canlı yükleme durumu, proje ayarı).
+apps/tizen/Debug/
+apps/tizen/.tizen-rds/
+apps/tizen/.vscode/
+
+# Gizli bilgiler: depoya asla girmemeli (depo public olacak).
+# Tizen/Samsung imza sertifikaları ve parolaları (normalde ~/SamsungCertificate altındadır, yine de).
+*.p12
+*.pfx
+*.pem
+*.key
+*.csr
+*.crt
+*.cer
+*.jks
+*.keystore
+SamsungCertificate/
+author-signature.xml
+signature*.xml
+profiles.xml
+# Ortam/anahtar dosyaları.
+.env
+.env.*
+!.env.example
+*.local
+secrets/
+credentials*.json
+# Sağlayıcıya ait oynatma listeleri ve yerel kopyalar (adres/kullanıcı/parola içerir).
+*.m3u
+*.m3u8
+*.tpk
+
+# Playwright çıktıları.
+test-results/
+playwright-report/
+
+docs/
+# Dahili planlar/notlar: depoya girmesin.
+/docs/
+
+# Masaüstü paketleme çıktısı (electron-builder).
+/release/
+.DS_Store
+
+# Editör ayarları: yerel mutlak yol içerir (Tizen eklentisi üretir).
+/.vscode/

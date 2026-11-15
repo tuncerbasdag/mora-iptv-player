@@ -1,0 +1,46 @@
+{
+  "name": "mora-iptv-player",
+  "version": "0.0.0",
+  "description": "Mora IPTV Player: a personal IPTV player for Samsung Tizen TVs, Windows, macOS and the browser. Bring your own M3U playlist or Xtream account.",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --test packages/core/test/*.test.ts packages/ui/test/*.test.ts packages/web-player/test/*.test.ts portal/test/*.test.mjs apps/desktop/test/*.test.mjs",
+    "web:build": "node apps/web/build.mjs",
+    "web:dev": "node apps/web/build.mjs --watch",
+    "web": "trap 'kill 0' EXIT; node apps/web/build.mjs --watch & node --watch apps/web/server.mjs",
+    "web:start": "node apps/web/server.mjs",
+    "tizen:build": "node apps/tizen/build.mjs",
+    "tizen:dev": "node apps/tizen/build.mjs --watch",
+    "portal:start": "node portal/server.mjs",
+    "test:e2e": "playwright test -c packages/ui/e2e",
+    "desktop": "npm run web:build && electron .",
+    "desktop:pack": "npm run web:build && electron-builder --dir",
+    "desktop:dist": "npm run web:build && electron-builder"
+  },
+  "keywords": ["iptv", "m3u", "xtream", "player", "tizen", "samsung-tv", "electron", "hls"],
+  "author": {
+    "name": "Tuncer Başdağ"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^26.6.6",
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0",
+    "esbuild": "^0.28.2",
+    "hls.js": "^1.7.4",
+    "mpegts.js": "^1.8.2",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.11"
+  },
+  "private": true,
+  "type": "module",
+  "main": "apps/desktop/main.mjs",
+  "homepage": "https://github.com/tuncerbasdag/mora-iptv-player",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tuncerbasdag/mora-iptv-player.git"
+  }
+}

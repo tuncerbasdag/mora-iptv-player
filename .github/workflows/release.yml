@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    name: Determine Semantic Version
+    runs-on: ubuntu-latest
+    outputs:
+      bump: ${{ steps.check.outputs.bump }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Inspect commit message for Conventional Commits
+        id: check
+        run: |
+          MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $MSG"
+
+          BUMP="none"
+          if echo "$MSG" | grep -qE "(BREAKING CHANGE:|!:)"; then
+            BUMP="major"
+          elif echo "$MSG" | grep -qE "^feat(\(.*\))?:"; then
+            BUMP="minor"
+          elif echo "$MSG" | grep -qE "^fix(\(.*\))?:"; then
+            BUMP="patch"
+          fi
+
+          echo "Determined bump: $BUMP"
+          echo "bump=$BUMP" >> "$GITHUB_OUTPUT"
+
+          if [ "$BUMP" = "none" ]; then
+            echo "No version bump needed (chore, docs, refactor, etc.). Skipping release."
+            exit 0
+          fi
+
+          # Read current version and bump it
+          npm version "$BUMP" --no-git-tag-version
+          NEW_VER=$(node -p "require('./package.json').version")
+          echo "New version: $NEW_VER"
+          echo "version=$NEW_VER" >> "$GITHUB_OUTPUT"
+
+          # Commit bumped package.json and push tag back to main
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "chore(release): v$NEW_VER [skip ci]"
+          git tag "v$NEW_VER"
+          git push origin main
+          git push origin "v$NEW_VER"
+
+  verify:
+    name: Verify & Test
+    needs: version
+    if: needs.version.outputs.bump != 'none'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: "v${{ needs.version.outputs.version }}"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Type check
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+
+  package:
+    name: Package (${{ matrix.os }})
+    needs: [version, verify]
+    if: needs.version.outputs.bump != 'none'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: "v${{ needs.version.outputs.version }}"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run web:build
+      - name: Build and upload installers
+        run: npx electron-builder --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
