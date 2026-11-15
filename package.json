@@ -1,6 +1,6 @@
 {
   "name": "mora-iptv-player",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Mora IPTV Player: a personal IPTV player for Samsung Tizen TVs, Windows, macOS and the browser. Bring your own M3U playlist or Xtream account.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
@@ -17,7 +17,16 @@
     "desktop:pack": "npm run web:build && electron-builder --dir",
     "desktop:dist": "npm run web:build && electron-builder"
   },
-  "keywords": ["iptv", "m3u", "xtream", "player", "tizen", "samsung-tv", "electron", "hls"],
+  "keywords": [
+    "iptv",
+    "m3u",
+    "xtream",
+    "player",
+    "tizen",
+    "samsung-tv",
+    "electron",
+    "hls"
+  ],
   "author": {
     "name": "Tuncer Başdağ"
   },
