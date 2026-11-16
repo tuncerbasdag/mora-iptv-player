@@ -20,7 +20,7 @@ export function isDesktopApp(): boolean {
 
 /** "<" chevron icon for the mouse Back buttons (inherits the text color). */
 export function backChevronSvg(size = 24): string {
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 5l-7 7 7 7"/></svg>`;
 }
 
 /** Electron/macOS: shows or hides the window's close/minimize/zoom buttons (no-op elsewhere). */
@@ -68,4 +68,26 @@ export function onFullscreenChange(cb: (fullscreen: boolean) => void): () => voi
   const handler = (): void => cb(!!document.fullscreenElement);
   document.addEventListener('fullscreenchange', handler);
   return () => document.removeEventListener('fullscreenchange', handler);
+}
+
+/**
+ * Round "<" Back button shown to the left of a screen title when mouse support is on (desktop + browser; never on Tizen).
+ * Not focusable: remote/keyboard users go back with Back/Esc. Returns null when mouse support is off.
+ */
+export function createMouseBackButton(onBack: () => void): HTMLButtonElement | null {
+  if (!hasMouseSupport()) return null;
+  const back = document.createElement('button');
+  back.type = 'button';
+  back.setAttribute('aria-label', 'Back');
+  back.innerHTML = backChevronSvg(24);
+  Object.assign(back.style, {
+    width: '44px', height: '44px', flex: 'none', marginRight: '14px', borderRadius: '50%', cursor: 'pointer',
+    border: '1.5px solid var(--border)', background: 'transparent', color: 'inherit', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    position: 'relative', top: '-3px', // capital letters sit above the line box's centre: lift the circle to the text's optical centre
+  });
+  back.addEventListener('click', (e) => {
+    e.stopPropagation();
+    onBack();
+  });
+  return back;
 }

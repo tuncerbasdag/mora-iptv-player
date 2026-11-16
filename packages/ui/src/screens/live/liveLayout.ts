@@ -54,6 +54,7 @@ export function buildLiveLayout(container: HTMLElement, searchBoxEl: HTMLElement
     Object.assign(back.style, {
       width: '44px', height: '44px', flex: 'none', marginRight: '14px', borderRadius: '50%', cursor: 'pointer',
       border: '1.5px solid var(--border)', background: 'transparent', color: 'inherit', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      position: 'relative', top: '-3px',
     });
     back.addEventListener('click', onBack);
     titleEl.append(back);

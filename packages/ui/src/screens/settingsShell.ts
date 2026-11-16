@@ -1,5 +1,5 @@
 import type { Connection } from '../../../core/src/types.ts';
-import { backChevronSvg, hasMouseSupport } from '../mouseSupport.ts';
+import { createMouseBackButton } from '../mouseSupport.ts';
 import { FocusManager, type FocusManagerOptions } from '../focusManager.ts';
 import { autoUpdateIconSvg, calendarIconSvg, downloadIconSvg, globeIconSvg, linkIconSvg, lockIconSvg, paletteIconSvg, subtitleIconSvg } from '../icons.ts';
 
@@ -82,19 +82,8 @@ export function buildSettingsShell(
   const home = document.createElement('div');
   home.className = 'settings-nav-title';
   home.addEventListener('click', onHome);
-  if (hasMouseSupport()) {
-    // Mouse Back button to the left of the title, same as Live TV (not focusable: remote/keyboard use Back/Esc).
-    const back = document.createElement('button');
-    back.type = 'button';
-    back.setAttribute('aria-label', 'Back');
-    back.innerHTML = backChevronSvg(24);
-    Object.assign(back.style, {
-      width: '44px', height: '44px', flex: 'none', marginRight: '14px', borderRadius: '50%', cursor: 'pointer',
-      border: '1.5px solid var(--border)', background: 'transparent', color: 'inherit', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    });
-    back.addEventListener('click', (e) => { e.stopPropagation(); onHome(); });
-    home.append(back);
-  }
+  const back = createMouseBackButton(onHome);
+  if (back) home.append(back);
   home.append('Ayarlar');
   const rule = document.createElement('div');
   rule.className = 'settings-rule';

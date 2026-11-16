@@ -1,3 +1,4 @@
+import { createMouseBackButton } from '../../mouseSupport.ts';
 import { div } from '../../dom.ts';
 import { lockIconSvg } from '../../icons.ts';
 import type { ViewId } from './vodTypes.ts';
@@ -27,7 +28,9 @@ export interface SideMenu {
 export function createSideMenu(title: string, onBack: () => void): SideMenu {
   const side = div('width:328px;flex:none;box-sizing:border-box;padding-right:28px;border-right:1.5px solid var(--border);display:flex;flex-direction:column');
   const sideTitle = div('display:flex;align-items:center;height:80px;font-size:38px;font-weight:800;letter-spacing:-0.01em;flex:none');
-  sideTitle.textContent = title;
+  const back = createMouseBackButton(onBack);
+  if (back) sideTitle.append(back);
+  sideTitle.append(title);
   sideTitle.addEventListener('click', onBack);
   const sideRule = div('height:1.5px;flex:none;background:var(--border);margin:4px 0 8px');
   const sideList = div('flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column', 'hide-scrollbar');

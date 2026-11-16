@@ -1,3 +1,4 @@
+import { createMouseBackButton } from '../../mouseSupport.ts';
 import type { Show } from '../../../../core/src/types.ts';
 import { div } from '../../dom.ts';
 import { addPosterDeco } from '../../posterDeco.ts';
@@ -21,7 +22,9 @@ export function buildShowSidePanel(o: ShowSidePanelOptions): HTMLElement {
   const { show } = o;
   const side = div('width:328px;flex:none;box-sizing:border-box;padding-right:28px;border-right:1.5px solid var(--border);display:flex;flex-direction:column');
   const back = div('display:flex;align-items:center;height:80px;font-size:38px;font-weight:800;letter-spacing:-0.01em;flex:none;cursor:pointer');
-  back.textContent = 'Diziler';
+  const backBtn = createMouseBackButton(o.onBack);
+  if (backBtn) back.append(backBtn);
+  back.append('Diziler');
   back.addEventListener('click', o.onBack);
   // Design: 16:9 poster in the left column.
   const poster = div(`background:${POSTER_BACKGROUND}`, 'vod-poster p169 detail');
