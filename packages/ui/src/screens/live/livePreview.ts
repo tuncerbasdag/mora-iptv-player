@@ -194,6 +194,11 @@ export class LivePreviewController implements PreviewController {
   goFullscreen(item: MediaItem): void {
     if (!this.adapter || this.handedOff) return; // a double click must not hand the adapter off twice
     this.stopWatchdog(); // the fullscreen PlayerController sets up its own watchdog
+    // A load still waiting for its first frame must not act after the handoff: its 'playing' listener would start
+    // a watchdog on this (soon destroyed) preview, which later reloads the stream on the destroyed player (audio with no picture).
+    this.cancelWait?.();
+    this.cancelWait = null;
+    this.clearLoadTimers();
     this.statsUnsub?.();
     this.statsUnsub = null;
     this.handedOff = true;
@@ -201,6 +206,8 @@ export class LivePreviewController implements PreviewController {
   }
 
   destroy(): void {
+    this.cancelWait?.();
+    this.cancelWait = null;
     this.clearLoadTimers();
     this.stopWatchdog();
     this.statsUnsub?.();

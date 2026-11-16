@@ -95,6 +95,7 @@ export class SingleStreamGate {
 class GuardedAdapter implements PlayerAdapter, TrackCapable, PendingTrackCapable, DiagnosticsCapable {
   /** Incremented on every new request and every stop; this is how stale pending requests get cancelled. */
   private ticket = 0;
+  private destroyed = false;
   private readonly gate: SingleStreamGate;
   private readonly inner: PlayerAdapter;
 
@@ -112,6 +113,8 @@ class GuardedAdapter implements PlayerAdapter, TrackCapable, PendingTrackCapable
   }
 
   private async start(open: () => Promise<void>): Promise<void> {
+    // A destroyed player must never open a stream again (e.g. a stale reconnect timer): it would play with sound but no picture.
+    if (this.destroyed) return NEVER;
     // First stop whichever stream is open (on another player or this one): this also cancels that player's
     // pending requests. The ticket must be taken AFTER this, otherwise the request would cancel itself.
     this.gate.stopActive();
@@ -137,6 +140,7 @@ class GuardedAdapter implements PlayerAdapter, TrackCapable, PendingTrackCapable
   }
 
   destroy(): void {
+    this.destroyed = true;
     this.ticket++;
     this.inner.destroy();
     this.gate.markStopped(this);
