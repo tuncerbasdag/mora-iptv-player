@@ -3,7 +3,12 @@ import { MpegtsEngine } from './mpegtsEngine.ts';
 import { NativeEngine } from './nativeEngine.ts';
 import type { EngineEmit, PlaybackEngine } from './playbackEngine.ts';
 
-const isTs = (url: string): boolean => /\.ts(\?|#|$)/i.test(url);
+/**
+ * Xtream/M3U providers commonly serve live channels as `http://host/user/pass/12345` (no extension) and answer with a raw
+ * MPEG-TS stream. hls.js cannot parse that (it expects a playlist) and loops reconnecting, so an extensionless path is treated as TS.
+ */
+const hasExtension = (url: string): boolean => /\.[a-z0-9]{2,5}$/i.test(url.split(/[?#]/)[0]!.split('/').pop() ?? '');
+const isTs = (url: string): boolean => /\.ts(\?|#|$)/i.test(url) || !hasExtension(url);
 const isM3u8 = (url: string): boolean => /\.m3u8(\?|#|$)/i.test(url);
 
 /**
