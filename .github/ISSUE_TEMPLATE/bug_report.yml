@@ -41,7 +41,7 @@ body:
     id: device
     attributes:
       label: TV model and Tizen version / OS version
-      description: For Tizen: TV model and year. For desktop: Windows or macOS version.
+      description: "For Tizen, the TV model and year. For desktop, the Windows or macOS version."
       placeholder: "e.g. Samsung QN90B (2022), Tizen 6.5"
   - type: dropdown
     id: source
