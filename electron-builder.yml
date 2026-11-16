@@ -18,6 +18,8 @@ asar: true
 # File names are fixed and have no spaces: GitHub release assets and update files (latest*.yml) refer to them.
 artifactName: Mora-IPTV-Player-${version}-${os}-${arch}.${ext}
 mac:
+  identity: "-" # ad-hoc sign the whole bundle: Apple Silicon refuses apps whose signature is missing/broken ("damaged")
+  hardenedRuntime: false # ad-hoc + hardened runtime needs extra entitlements or the app fails to launch
   category: public.app-category.video
   target:
     - { target: dmg, arch: [arm64, x64] }
