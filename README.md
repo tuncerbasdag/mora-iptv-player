@@ -157,6 +157,15 @@ slows down over time, because the player's real buffer figure stays at 0 until t
 | **Windows** 10 / 11 (64-bit) | `Mora-IPTV-Player-<version>-win-x64.exe` |
 
 Not sure which Mac you have? Apple menu → **About This Mac**: "Chip: Apple M..." is Apple Silicon, "Processor: Intel..." is Intel.
+**First launch:** the app is not signed by Apple or Microsoft, so your system warns you once.
+
+- **macOS:** after "Not Opened" appears, click **Done**, open **System Settings → Privacy & Security**, scroll to **Security** and click
+  **Open Anyway** next to "Mora IPTV Player". If that does not help, run once in Terminal:
+  `xattr -dr com.apple.quarantine "/Applications/Mora IPTV Player.app"`.
+- **Windows:** on "Windows protected your PC", click **More info → Run anyway**.
+
+Later updates installed from inside the app do not show this warning again.
+
 Each release also lists `SHA256SUMS.txt` so you can verify the download (`shasum -a 256 -c SHA256SUMS.txt`).
 
 The desktop app wraps the web version in an Electron window. It starts the same local server (with the CORS proxy)
