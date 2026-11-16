@@ -176,8 +176,11 @@ Releases are fully automated via GitHub Actions using **Conventional Commits**. 
    - Increments the version in `package.json` and creates a git tag `vX.X.X`.
    - Runs type checks and unit tests.
    - Builds installers for macOS (`.dmg`, `.zip`) and Windows (`.exe`).
-   - Creates and attaches installer assets to a draft GitHub release.
-3. Review the draft release on GitHub and click **Publish release**; installed desktop apps will then discover the update.
+   - Creates one GitHub release titled **Mora IPTV Player X.Y.Z** (with generated notes) and attaches the macOS
+     `.dmg`/`.zip`, the Windows `.exe` and the update metadata (`latest.yml`, `latest-mac.yml`) to it.
+   - Publishes the release once both platforms have finished uploading; installed desktop apps then discover the update.
+3. If a release run fails, fix the cause and re-run the **Release** workflow manually (Actions → Release → Run workflow)
+   with the existing version (e.g. `0.1.0`); delete the half-finished draft release first.
 
 ### Updates
 

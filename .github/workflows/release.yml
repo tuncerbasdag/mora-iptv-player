@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  # Re-run packaging for an already-tagged version (e.g. after a failed release).
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Existing version to (re)build, without the "v" (e.g. 0.1.0)'
+        required: true
 
 permissions:
   contents: write
@@ -13,19 +19,32 @@ jobs:
     name: Determine Semantic Version
     runs-on: ubuntu-latest
     outputs:
-      bump: ${{ steps.check.outputs.bump }}
-      version: ${{ steps.check.outputs.version }}
+      bump: ${{ steps.check.outputs.bump || steps.manual.outputs.bump }}
+      version: ${{ steps.check.outputs.version || steps.manual.outputs.version }}
     steps:
+      - name: Use the requested version (manual run)
+        id: manual
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          REQUESTED: ${{ inputs.version }}
+        run: |
+          echo "$REQUESTED" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "Invalid version: $REQUESTED"; exit 1; }
+          echo "bump=manual" >> "$GITHUB_OUTPUT"
+          echo "version=$REQUESTED" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v4
+        if: github.event_name == 'push'
         with:
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
+        if: github.event_name == 'push'
         with:
           node-version: 24
 
       - name: Inspect commit message for Conventional Commits
         id: check
+        if: github.event_name == 'push'
         run: |
           MSG=$(git log -1 --pretty=%B)
           echo "Commit message: $MSG"
@@ -82,9 +101,30 @@ jobs:
       - name: Unit tests
         run: npm test
 
+  # Create the release ONCE, before the platform builds start. Without this, the macOS and Windows
+  # jobs race and each creates its own draft release for the same tag (assets end up split in two).
+  release:
+    name: Create draft release
+    needs: [version, verify]
+    if: needs.version.outputs.bump != 'none'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create draft release (if missing)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          # `gh release view <tag>` cannot see drafts; list them instead.
+          if gh release list --repo "$GITHUB_REPOSITORY" --limit 200 --json tagName --jq '.[].tagName' | grep -qx "v$VERSION"; then
+            echo "Release v$VERSION already exists; reusing it."
+          else
+            gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --draft --verify-tag \
+              --title "Mora IPTV Player $VERSION" --generate-notes
+          fi
+
   package:
     name: Package (${{ matrix.os }})
-    needs: [version, verify]
+    needs: [version, verify, release]
     if: needs.version.outputs.bump != 'none'
     strategy:
       fail-fast: false
@@ -107,3 +147,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+  # Publish only after BOTH platforms uploaded their files (release immutability locks assets once published).
+  publish:
+    name: Publish release
+    needs: [version, package]
+    if: needs.version.outputs.bump != 'none'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: gh release edit "v$VERSION" --repo "$GITHUB_REPOSITORY" --draft=false --latest
