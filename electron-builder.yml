@@ -28,6 +28,7 @@ win:
 nsis:
   oneClick: true
   perMachine: false
+  differentialPackage: false # no .exe.blockmap: updates download the full installer
 publish:
   provider: github
   owner: tuncerbasdag

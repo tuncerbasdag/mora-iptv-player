@@ -148,6 +148,17 @@ slows down over time, because the player's real buffer figure stays at 0 until t
 
 ## Desktop app (Windows and macOS)
 
+**Download:** get the installer for your computer from the [latest release](https://github.com/tuncerbasdag/mora-iptv-player/releases/latest):
+
+| Your computer | File |
+| --- | --- |
+| Mac with **Apple Silicon** (M1, M2, M3, M4 ...) | `Mora-IPTV-Player-<version>-mac-arm64.dmg` |
+| Mac with an **Intel** processor | `Mora-IPTV-Player-<version>-mac-x64.dmg` |
+| **Windows** 10 / 11 (64-bit) | `Mora-IPTV-Player-<version>-win-x64.exe` |
+
+Not sure which Mac you have? Apple menu → **About This Mac**: "Chip: Apple M..." is Apple Silicon, "Processor: Intel..." is Intel.
+Each release also lists `SHA256SUMS.txt` so you can verify the download (`shasum -a 256 -c SHA256SUMS.txt`).
+
 The desktop app wraps the web version in an Electron window. It starts the same local server (with the CORS proxy)
 inside the app, so there is nothing to install or run besides the app itself. Your connections and favorites are
 stored in the app's own data folder.
@@ -176,8 +187,9 @@ Releases are fully automated via GitHub Actions using **Conventional Commits**. 
    - Increments the version in `package.json` and creates a git tag `vX.X.X`.
    - Runs type checks and unit tests.
    - Builds installers for macOS (`.dmg`, `.zip`) and Windows (`.exe`).
-   - Creates one GitHub release titled **Mora IPTV Player X.Y.Z** (with generated notes) and attaches the macOS
-     `.dmg`/`.zip`, the Windows `.exe` and the update metadata (`latest.yml`, `latest-mac.yml`) to it.
+   - Creates one GitHub release titled **Mora IPTV Player X.Y.Z** with a download table (Apple Silicon / Intel / Windows)
+     and generated notes, and attaches the macOS `.dmg`/`.zip`, the Windows `.exe`, the update metadata
+     (`latest.yml`, `latest-mac.yml`) and `SHA256SUMS.txt`.
    - Publishes the release once both platforms have finished uploading; installed desktop apps then discover the update.
 3. If a release run fails, fix the cause and re-run the **Release** workflow manually (Actions → Release → Run workflow)
    with the existing version (e.g. `0.1.0`); delete the half-finished draft release first.
