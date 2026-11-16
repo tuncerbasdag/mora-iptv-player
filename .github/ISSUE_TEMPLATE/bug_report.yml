@@ -1,0 +1,78 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! This project provides **no content** and cannot help with providers, playlists or channel availability.
+
+        **Never paste your playlist URL, Xtream server address, username, password or any token** into this issue, in text, logs or screenshots. Replace them with `example.com` / `user` / `pass`.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I removed every playlist URL, server address, username, password and token from this report.
+          required: true
+        - label: I use the latest release and searched existing issues.
+          required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Samsung TV (Tizen)
+        - Windows app
+        - macOS app (Apple Silicon)
+        - macOS app (Intel)
+        - Browser (localhost)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: Shown in Settings → Update (desktop) or on the home screen.
+      placeholder: "0.1.1"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: TV model and Tizen version / OS version
+      description: For Tizen: TV model and year. For desktop: Windows or macOS version.
+      placeholder: "e.g. Samsung QN90B (2022), Tizen 6.5"
+  - type: dropdown
+    id: source
+    attributes:
+      label: Source type
+      options:
+        - M3U playlist
+        - Xtream account
+        - Not related to a source
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do and what did you see?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots (optional)
+      description: Remove any addresses, usernames, passwords and tokens first.

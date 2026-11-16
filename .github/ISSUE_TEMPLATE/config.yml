@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Pull requests are not accepted
+    url: https://github.com/tuncerbasdag/mora-iptv-player#contributing
+    about: This repository only takes bug reports and feature requests through issues. Pull requests are not reviewed or merged.
