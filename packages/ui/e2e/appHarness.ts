@@ -1,6 +1,6 @@
 /**
- * Uygulama düzeyi (startApp: ekranlar arası geçiş, ebeveyn kilidi oturumu, oynatıcı devri) E2E test sayfası.
- * Gerçek PlaylistService + gerçek ekranlar; depo bellekte, oynatıcı sahte. Playwright `window.__appStart(...)` ile kurar.
+ * App-level (startApp: screen-to-screen transitions, parental-lock session, player handoff) E2E test page.
+ * Real PlaylistService + real screens; the store is in memory, the player is fake. Playwright sets it up via `window.__appStart(...)`.
  */
 import { BasePlayerAdapter } from '../src/basePlayerAdapter.ts';
 import { startApp } from '../src/app.ts';
@@ -12,32 +12,32 @@ import type { AppUpdateState, AppUpdater } from '../src/appUpdater.ts';
 import { DEFAULT_SETTINGS, type Library, type MediaItem, type Settings, type Show } from '../../core/src/types.ts';
 
 interface AppOptions {
-  /** Ebeveyn kilidi açık: "XXX ADULT" kategorisi ve (lockSettings ile) Ayarlar kilitli. PIN: 0000 (varsayılan). */
+  /** Parental lock on: "XXX ADULT" category and (with lockSettings) Settings locked. PIN: 0000 (default). */
   parental?: boolean;
   lockSettings?: boolean;
-  /** Tema kimliği (data-theme'e uygulanmalı). */
+  /** Theme ID (must be applied to data-theme). */
   theme?: Settings['theme'];
-  /** Altyazı stili başlangıç değeri (verilmezse DEFAULT_SETTINGS.subtitleStyle). */
+  /** Initial subtitle style (if omitted, DEFAULT_SETTINGS.subtitleStyle). */
   subtitleStyle?: Settings['subtitleStyle'];
-  /** Oynatma sahte oynatıcıda 'playing'e kadar geçen ms. */
+  /** ms until playback reaches 'playing' in the fake player. */
   loadMs?: number;
-  /** İkinci (pasif, Xtream) bağlantı: düzenleme/aktif etme/silme testleri için. */
+  /** Second (inactive, Xtream) connection: for edit/activate/delete tests. */
   second?: boolean;
-  /** Uzaktan yükleme yapılandırılmış: Bağlantı Ekle'de "Uzaktan Yükle" düğmesi çıkar. */
+  /** Remote setup configured: a "Remote Setup" button appears in Add Connection. */
   remote?: boolean;
-  /** EPG ve otomatik güncelleme gibi ayarların başlangıç değerleri. */
+  /** Initial values of settings such as EPG and auto-update. */
   autoRefresh?: boolean;
-  /** Hiç bağlantı yok (ilk kurulum): anasayfa kartları soluk, "Bağlantı seç". */
+  /** No connections at all (first run): home cards are dimmed, "Select connection". */
   noConnection?: boolean;
-  /** Aktif bağlantının son durumu (anasayfa rozetindeki nokta rengi). */
+  /** Latest status of the active connection (dot color on the home badge). */
   status?: 'ok' | 'error' | 'none';
-  /** Dizi detayı testleri için ek diziler: numarasız bölümlü ve 20 bölümlü (küçük resimli) dizi. */
+  /** Extra series for series detail tests: one with unnumbered episodes and one with 20 episodes (with thumbnails). */
   extraShows?: boolean;
-  /** İzleme kayıtları tohumu: [bölüm/film kimliği, izlenen sn, süre sn] (eski → yeni sırayla; en yeni başta görünür). */
+  /** Watch-history seed: [episode/movie id, watched sec, duration sec] (oldest → newest; the newest shows first). */
   progress?: Array<[string, number, number]>;
-  /** Verilirse bölüm küçük resimleri /logo/ üzerinden bu anahtarla istenir (sunucuda sayılır). */
+  /** If given, episode thumbnails are requested via /logo/ with this key (counted on the server). */
   logoKey?: string;
-  /** Masaüstü güncelleyicisi (sahte): verilirse Ayarlar'da "Güncelleme" sayfası çıkar. `__app.updater` ile sürülür. */
+  /** Desktop updater (fake): if given, an "Update" page appears in Settings. Driven via `__app.updater`. */
   updater?: Partial<AppUpdateState>;
 }
 
@@ -90,8 +90,8 @@ function longShow(logoKey: string | undefined): Show {
 
 const LIBRARY: Library = {
   live: [
-    { name: 'ULUSAL', items: [live('trt1', 'TR:TRT 1 HD', 'ULUSAL'), live('show', 'TR:SHOW TV HD', 'ULUSAL'), live('star', 'TR:STAR TV HD', 'ULUSAL')] },
-    { name: 'SPOR', items: [live('bein1', 'TR:BEINSPORTS 1 HD', 'SPOR'), live('bein2', 'TR:BEINSPORTS 2 HD', 'SPOR')] },
+    { name: 'ULUSAL', items: [live('alpha1', 'TR:ALPHA 1 HD', 'ULUSAL'), live('bravo', 'TR:BRAVO TV HD', 'ULUSAL'), live('coral', 'TR:CORAL TV HD', 'ULUSAL')] },
+    { name: 'SPOR', items: [live('sports1', 'TR:SPORTS 1 HD', 'SPOR'), live('sports2', 'TR:SPORTS 2 HD', 'SPOR')] },
     { name: 'XXX ADULT', items: [live('gizli', 'TR:GİZLİ KANAL', 'XXX ADULT')] },
   ],
   movies: [{ name: 'Aksiyon', items: [movie(1), movie(2), movie(3)] }],
@@ -99,7 +99,7 @@ const LIBRARY: Library = {
   counts: { live: 6, movies: 3, series: 1, episodes: 4 },
 };
 
-/** İkinci bağlantının kütüphanesi: daha az kanal (aktif etmek anasayfa sayaçlarını günceller). */
+/** The second connection's library: fewer channels (activating it updates the home counters). */
 const SECOND_LIBRARY: Library = { ...LIBRARY, live: LIBRARY.live.slice(0, 1), counts: { live: 3, movies: 3, series: 1, episodes: 4 } };
 
 class FakeAdapter extends BasePlayerAdapter implements PlayerAdapter {
@@ -189,12 +189,12 @@ function memoryStorage(settings: Settings, library: Library, seed: Array<[string
 interface AppHarness {
   loadMs: number;
   adapters: FakeAdapter[];
-  /** Son oluşturulan oynatıcıya olay gönderir. */
+  /** Sends an event to the most recently created player. */
   emit: (event: PlayerAdapterEvent, ...args: unknown[]) => void;
   settings: () => Settings;
   playlist: PlaylistService;
   stop: () => void;
-  /** Sahte güncelleyici: durumu değiştirir (arayüze iletilir) ve yapılan çağrıları kaydeder. */
+  /** Fake updater: changes state (forwarded to the UI) and records the calls made. */
   updater: { set: (s: Partial<AppUpdateState>) => void; calls: string[]; menuOpen: () => void };
 }
 
@@ -216,7 +216,7 @@ window.__appStart = async (o: AppOptions = {}) => {
     connections: o.noConnection ? [] : [
       { id: 'c1', name: 'Deneme Listesi', source: { kind: 'm3u', url: 'http://fake.test/list.m3u' }, url: 'http://fake.test/list.m3u', addedAt: 1, lastUpdated: 1, lastHash: null, status: o.status ?? 'ok', counts: LIBRARY.counts },
       ...(o.second
-        ? [{ id: 'c2', name: 'İkinci Liste', source: { kind: 'xtream' as const, server: 'http://x.test:8080', username: 'ali', password: 'gizli' }, url: 'http://x.test:8080/get.php?username=ali&password=gizli&type=m3u_plus&output=ts', addedAt: 2, lastUpdated: null, lastHash: null, status: 'none' as const, counts: null }]
+        ? [{ id: 'c2', name: 'İkinci Liste', source: { kind: 'xtream' as const, server: 'http://example.test:8080', username: 'ali', password: 'gizli' }, url: 'http://example.test:8080/get.php?username=ali&password=gizli&type=m3u_plus&output=ts', addedAt: 2, lastUpdated: null, lastHash: null, status: 'none' as const, counts: null }]
         : []),
     ],
     activeConnectionId: o.noConnection ? null : 'c1',
@@ -227,7 +227,7 @@ window.__appStart = async (o: AppOptions = {}) => {
     : LIBRARY;
   const storage = memoryStorage(settings, library, o.progress);
   const playlist = new PlaylistService(storage, async () => {
-    throw new Error('ağ yok (test)'); // yenilemeler başarısız olur, önbellekteki kütüphane korunur
+    throw new Error('ağ yok (test)'); // refreshes fail, the cached library is preserved
   });
   await playlist.init();
   const h: AppHarness = {

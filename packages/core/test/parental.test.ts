@@ -61,7 +61,7 @@ test('applyParental: locked categories stay empty and marked, content of that ty
   const view = applyParental(lib(), { ...on, lockedCategories: ['Çocuk'] }, false);
   assert.deepEqual(view.live.map((c) => [c.name, !!c.locked, c.items.length]), [['Haber', false, 1], ['XXX Kanallar', true, 0]]);
   assert.deepEqual(view.movies.map((c) => [c.name, !!c.locked]), [['Aksiyon', false], ['Çocuk', true]]);
-  // Film C, which has "Aksiyon;Çocuk" as its type, also appeared under Aksiyon but is dropped because Çocuk is locked.
+  // Film C, which belongs to both the action and the locked kids category, also appeared under action but is dropped because the kids category is locked.
   assert.deepEqual(view.movies[0].items.map((i) => i.name), ['Film A (2020)']);
   assert.equal(view.movies[1].items.length, 0);
   assert.deepEqual(view.series.map((c) => [c.name, !!c.locked]), [['Dizi +18', true], ['Dizi', false]]);

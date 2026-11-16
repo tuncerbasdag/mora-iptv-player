@@ -1,7 +1,7 @@
 /**
- * E2E test sayfası: renderLiveScreen'i gerçek bir tarayıcıda, sahte oynatıcı/depo/kategorilerle çalıştırır.
- * Gerçek yayın, sağlayıcı ya da ağ gerekmez. Playwright testleri `window.__start(...)` ile ekranı kurar,
- * `window.__h` ile geri çağrıları ve oynatıcı çağrılarını okur.
+ * E2E test page: runs renderLiveScreen in a real browser with a fake player/store/categories.
+ * No real stream, provider or network needed. Playwright tests set up the screen with `window.__start(...)`,
+ * and read callbacks and player calls via `window.__h`.
  */
 import { BasePlayerAdapter } from '../src/basePlayerAdapter.ts';
 import type { PlayerAdapter } from '../src/playerAdapter.ts';
@@ -16,14 +16,14 @@ type PlayMode = 'ok' | 'fail' | 'blocked' | 'never';
 
 interface StartOptions {
   playMode?: PlayMode;
-  /** loadLive çağrısından ilk karenin ('playing') gelmesine kadar geçen süre. */
+  /** Time from the loadLive call until the first frame ('playing') arrives. */
   loadMs?: number;
   favorites?: string[];
-  /** true: ekran, tam ekrandan dönüşmüş gibi `resume` ile kurulur (zaten oynayan kanal). */
+  /** true: the screen is set up with `resume`, as if returning from full screen (channel already playing). */
   resume?: boolean;
-  /** true: EPG servisi yüklü gelir ('epg1' kanalında şu an + sonraki program). */
+  /** true: the EPG service is loaded (current + next program on channel 'epg1'). */
   epg?: boolean;
-  /** Verilirse LOGOLU kategorisi eklenir; logo istekleri bu anahtarla sunucuda sayılır. */
+  /** If given, a LOGOLU category is added; logo requests are counted on the server with this key. */
   logoKey?: string;
 }
 
@@ -40,20 +40,20 @@ export const CATEGORIES: Category<MediaItem>[] = [
   {
     name: 'ULUSAL',
     items: [
-      mk('trt1', 'TR:TRT 1 HD', 'ULUSAL'),
-      mk('show', 'TR:SHOW TV HD', 'ULUSAL'),
-      mk('star', 'TR:STAR TV HD', 'ULUSAL'),
-      mk('atv', 'TR:ATV HD', 'ULUSAL'),
-      mk('kanald', 'TR:KANAL D HD', 'ULUSAL'),
+      mk('alpha1', 'TR:ALPHA 1 HD', 'ULUSAL'),
+      mk('bravo', 'TR:BRAVO TV HD', 'ULUSAL'),
+      mk('coral', 'TR:CORAL TV HD', 'ULUSAL'),
+      mk('delta', 'TR:DELTA HD', 'ULUSAL'),
+      mk('echo', 'TR:ECHO HD', 'ULUSAL'),
     ],
   },
   {
     name: 'SPOR',
-    items: [mk('bein1', 'TR:BEINSPORTS 1 HD', 'SPOR'), mk('bein2', 'TR:BEINSPORTS 2 HD', 'SPOR'), mk('ssport', 'TR:S SPORT', 'SPOR')],
+    items: [mk('sports1', 'TR:SPORTS 1 HD', 'SPOR'), mk('sports2', 'TR:SPORTS 2 HD', 'SPOR'), mk('sportplus', 'TR:SPORT PLUS', 'SPOR')],
   },
   {
     name: 'YEREL',
-    items: [mk('brt1', 'TR:BRT 1 HD', 'YEREL'), mk('brt3', 'TR:BRT 3 HD', 'YEREL'), mk('brt3k', 'TR:BRT 3 (KIBRIS)', 'YEREL')],
+    items: [mk('gamma1', 'TR:GAMMA 1 HD', 'YEREL'), mk('gamma3', 'TR:GAMMA 3 HD', 'YEREL'), mk('gamma3k', 'TR:GAMMA 3 (KIBRIS)', 'YEREL')],
   },
   { name: 'KİLİTLİ', locked: true, items: [mk('gizli', 'TR:GİZLİ KANAL', 'KİLİTLİ')] },
   {
@@ -67,7 +67,7 @@ export const CATEGORIES: Category<MediaItem>[] = [
   },
 ];
 
-/** Logo yükleme testi için: 60 kanal (ilk 30'u hemen, kalanı kaydırdıkça yüklenir) + 1 bozuk logo. */
+/** For the logo loading test: 60 channels (the first 30 immediately, the rest as you scroll) + 1 broken logo. */
 export function logoCategory(key: string): Category<MediaItem> {
   const items = Array.from({ length: 60 }, (_, i) =>
     mk(`logo${i}`, `LOGO ${String(i + 1).padStart(2, '0')}`, 'LOGOLU', { logo: `/logo/ok-${i}.svg?k=${key}` }),
@@ -82,7 +82,7 @@ class FakeAdapter extends BasePlayerAdapter implements PlayerAdapter {
     super();
     h.adapters.push(this);
   }
-  /** Testlerin gerçek oynatıcıdan gelen olayı (buffering, error...) simüle etmesi için. */
+  /** For tests to simulate an event coming from a real player (buffering, error...). */
   override emit(event: Parameters<BasePlayerAdapter['on']>[0], ...args: unknown[]): void {
     super.emit(event, ...args);
   }
@@ -92,7 +92,7 @@ class FakeAdapter extends BasePlayerAdapter implements PlayerAdapter {
     if (playMode === 'fail') throw new Error('boom');
     if (playMode === 'blocked') throw new StreamBlockedError('Hesap başka bir cihazda kullanılıyor.');
     if (playMode === 'never') return;
-    // Gerçek oynatıcı gibi: tampon yüzdesi ilk kareye kadar 0 bildirilir, sonra 'playing' gelir.
+    // Like a real player: buffer percentage is reported as 0 until the first frame, then 'playing' arrives.
     for (let t = 0; t < loadMs; t += 200) this.timers.push(setTimeout(() => this.emit('bufferprogress', 0), t));
     this.timers.push(
       setTimeout(() => {
@@ -154,10 +154,10 @@ interface Harness {
   fullscreen: Array<{ id: string; categoryId: string }>;
   unlock: string[];
   favorites: () => string[];
-  /** Ekranda oluşturulan oynatıcı sayısı (kanal değiştirince yenisi açılmamalı). */
+  /** Number of players created on the screen (a new one must not open on channel change). */
   adaptersCreated: number;
   adapters: FakeAdapter[];
-  /** Son oynatıcıya olay gönderir. */
+  /** Sends an event to the most recent player. */
   emit: (event: Parameters<FakeAdapter['emit']>[0], ...args: unknown[]) => void;
 }
 
@@ -170,7 +170,7 @@ declare global {
 
 window.__start = (o: StartOptions = {}) => {
   const container = document.getElementById('app')!;
-  applyScaleToFit(container); // gerçek uygulamadaki gibi sahneyi ortalar/ölçekler
+  applyScaleToFit(container); // centers/scales the stage just like the real app
   const storage = memoryStorage(o.favorites ?? []);
   const h: Harness = {
     opts: { playMode: o.playMode ?? 'ok', loadMs: o.loadMs ?? 300 },

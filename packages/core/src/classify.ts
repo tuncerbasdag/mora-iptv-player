@@ -6,7 +6,7 @@ const LIVE_EXT = /\.(m3u8|ts)(\?|#|$)/i;
 const SERIES_WORDS = /\b(dizi|diziler|series|tv ?shows?|season|sezon)\b/i;
 const MOVIE_WORDS = /\b(vod|film|filmler|movies?|sinema|cinema)\b/i;
 
-// S01E05, S1 E5, 1x05, "1. Sezon 5. Bölüm" (Turkish: "Season 1 Episode 5"), "Sezon 1 Bölüm 5"
+// S01E05, S1 E5, 1x05, localized "Season 1 Episode 5" forms
 const EPISODE_PATTERNS: RegExp[] = [
   /^(.*?)[\s._-]*S(\d{1,2})[\s._-]*E(\d{1,3})\b/i,
   /^(.*?)[\s._-]+(\d{1,2})x(\d{1,3})\b/i,

@@ -17,15 +17,15 @@ const CONTENT_TYPES = {
   '.png': 'image/png',
 };
 
-// PROXY_LOG=1 ile sağlayıcıya açık canlı akış sayısı konsola yazılır (aynı anda 1'i geçmemeli).
+// With PROXY_LOG=1 the number of live streams open to the provider is printed to the console (should never exceed 1 at a time).
 const PROXY_LOG = process.env.PROXY_LOG === '1';
 let openStreams = 0;
 
 const HOP_BY_HOP = new Set(['content-encoding', 'content-length', 'transfer-encoding', 'connection']);
 
 /**
- * Sunucuyu başlatır (yalnızca 127.0.0.1). Masaüstü uygulaması bunu aynı süreçte çağırır; `npm run web:start` ise
- * dosya doğrudan çalıştırıldığında (aşağıdaki en alt kısım) çağırır. Dönen `close()` sunucuyu kapatır.
+ * Starts the server (127.0.0.1 only). The desktop app calls this in the same process; `npm run web:start` calls it when
+ * the file is run directly (bottom of the file below). The returned `close()` shuts the server down.
  */
 export function startServer({ port = DEFAULT_PORT } = {}) {
   const server = createServer((req, res) => {
@@ -72,10 +72,10 @@ async function serveStatic(res, pathname) {
 }
 
 /**
- * IPTV sunucularının çoğu CORS başlığı göndermiyor; burada istekleri yerel sunucu üzerinden
- * yapıyoruz. M3U8 yanıtlarındaki segment/alt-playlist adresleri, yönlendirme sonrası son
- * URL'ye göre çözülüp tekrar bu proxy'ye yönlendirilecek şekilde yeniden yazılır. Range başlığı
- * (mp4 sarma için) ve içerik doğrudan akış olarak (pipe) geçirilir.
+ * Most IPTV servers don't send CORS headers; here we make the requests through the local server.
+ * Segment/sub-playlist addresses in M3U8 responses are resolved against the final URL after redirects and
+ * rewritten to point back at this proxy. The Range header
+ * (for mp4 seeking) and the content are passed through directly as a stream (pipe).
  */
 async function handleProxy(req, res, url) {
   const target = url.searchParams.get('url');
@@ -88,9 +88,9 @@ async function handleProxy(req, res, url) {
   const headers = {};
   if (req.headers.range) headers.range = req.headers.range;
 
-  // Tarayıcı bağlantıyı kapatınca (kanal değişimi, sekme kapanması) sağlayıcıya açık kalan
-  // bağlantı da kapanmalı: canlı akış hiç bitmediği için aksi halde proxy onu sonsuza kadar
-  // açık tutar ve sağlayıcı hesabı "çoklu bağlantı" diye engeller.
+  // When the browser closes the connection (channel change, tab closed), the connection still open to the provider
+  // must be closed too: since a live stream never ends, the proxy would otherwise hold it open forever
+  // and the provider would block the account for "multiple connections".
   const upstreamAbort = new AbortController();
   res.on('close', () => upstreamAbort.abort());
 
@@ -98,7 +98,7 @@ async function handleProxy(req, res, url) {
   try {
     upstream = await fetch(target, { headers, redirect: 'follow', signal: upstreamAbort.signal });
   } catch (err) {
-    if (upstreamAbort.signal.aborted) return; // istemci zaten gitti
+    if (upstreamAbort.signal.aborted) return; // the client is already gone
     console.warn('[proxy] yukarı akış isteği başarısız', target, err.message);
     res.writeHead(502);
     res.end('Yukarı akış sunucusuna erişilemedi');
@@ -119,9 +119,9 @@ async function handleProxy(req, res, url) {
   if (isPlaylist) {
     const text = await upstream.text().catch(() => null);
     if (text === null) return;
-    // Uzantısı .m3u olan KANAL LİSTESİ de bu dala düşer: HLS etiketi (#EXT-X-...) yoksa HLS oynatma listesi değildir ve
-    // aynen iletilir. Yeniden yazılırsa her yayın adresi proxy adresine dönüşür; oynatıcı bir kez daha proxy'ler ve
-    // adres kodlandığı için /series/, /movie/ kalıpları sınıflandırıcıda eşleşmez.
+    // A CHANNEL LIST with a .m3u extension also lands in this branch: without an HLS tag (#EXT-X-...) it is not an HLS playlist and
+    // is passed through unchanged. If rewritten, every stream address would become a proxy address; the player would proxy it once more and,
+    // because the address is encoded, patterns like /series/ and /movie/ would not match in the classifier.
     if (!/#EXT-X-/.test(text)) {
       res.writeHead(upstream.status, outHeaders);
       res.end(text);
@@ -142,8 +142,8 @@ async function handleProxy(req, res, url) {
     return;
   }
   openStreams++;
-  // Tanı (PROXY_LOG=1): sağlayıcı verisi kesintisiz mi, toplu mu, ilk bayttan sonra duruyor mu? Adreste kimlik bilgisi olabilir:
-  // yalnızca sunucu adı yazılır.
+  // Diagnostics (PROXY_LOG=1): is the provider data continuous, bursty, or does it stall after the first byte? The address may contain credentials:
+  // only the server name is printed.
   const host = (() => {
     try {
       return new URL(target).host;
@@ -170,7 +170,7 @@ async function handleProxy(req, res, url) {
       res.write(chunk);
     }
   } catch {
-    // istemci koptu (abort) ya da yukarı akış düştü — aşağıda her durumda kapatılır
+    // the client disconnected (abort) or the upstream dropped — closed below in every case
   } finally {
     upstreamAbort.abort();
     if (!res.destroyed) res.end();
@@ -201,7 +201,7 @@ function rewritePlaylist(text, baseUrl, proxyBase) {
     .join('\n');
 }
 
-// Doğrudan `node apps/web/server.mjs` ile çalıştırılırsa sunucuyu başlat (import edilirse başlatma).
+// If run directly with `node apps/web/server.mjs`, start the server (don't start it when imported).
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const { url } = await startServer();
   console.log(`IPTV web oynatıcı: ${url}`);

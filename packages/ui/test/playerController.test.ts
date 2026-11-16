@@ -41,10 +41,10 @@ function makeStorage(): StorageAdapter & { resumes: Map<string, number> } {
 }
 
 function liveItem(id = 'live1') {
-  return { id, name: 'Kanal', url: 'http://x/live.m3u8', group: 'Haber', kind: 'live' as const };
+  return { id, name: 'Kanal', url: 'http://example.test/live.m3u8', group: 'Haber', kind: 'live' as const };
 }
 function vodItem(id = 'vod1') {
-  return { id, name: 'Film', url: 'http://x/film.mp4', group: 'Filmler', kind: 'movie' as const };
+  return { id, name: 'Film', url: 'http://example.test/film.mp4', group: 'Filmler', kind: 'movie' as const };
 }
 
 test('playLive(): adapter.loadLive is called, the resume live id is saved', async () => {
@@ -52,7 +52,7 @@ test('playLive(): adapter.loadLive is called, the resume live id is saved', asyn
   const storage = makeStorage();
   const ctrl = new PlayerController(adapter, storage);
   await ctrl.playLive(liveItem());
-  assert.deepEqual(adapter.calls.loadLive, ['http://x/live.m3u8']);
+  assert.deepEqual(adapter.calls.loadLive, ['http://example.test/live.m3u8']);
   assert.equal(storage.getLastLive(), 'live1');
   ctrl.stop();
 });
@@ -63,7 +63,7 @@ test('playVod(): adapter.loadVod is called with the saved resume seconds', async
   storage.setResume('vod1', 42);
   const ctrl = new PlayerController(adapter, storage);
   await ctrl.playVod(vodItem());
-  assert.deepEqual(adapter.calls.loadVod, [{ url: 'http://x/film.mp4', resumeSeconds: 42 }]);
+  assert.deepEqual(adapter.calls.loadVod, [{ url: 'http://example.test/film.mp4', resumeSeconds: 42 }]);
 });
 
 test('vod timeupdate: seconds are saved as the resume position', async () => {

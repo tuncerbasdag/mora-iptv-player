@@ -8,8 +8,8 @@ function subscribe(channel, callback) {
   return () => ipcRenderer.removeListener(channel, handler);
 }
 
-// Başlık çubuğu olmadığı için pencere sayfanın herhangi bir yerinden sürüklenerek taşınır. Hareket eşiği aşılmadıkça tıklamalar
-// olduğu gibi çalışır; sürükleme sonrası oluşan 'click' yutulur. Form alanları (input/select/textarea) sürüklemeyi başlatmaz.
+// There is no title bar, so the window is moved by dragging from anywhere on the page. Clicks work as usual unless the movement threshold
+// is exceeded; the 'click' that follows a drag is swallowed. Form fields (input/select/textarea) do not start a drag.
 const DRAG_THRESHOLD_PX = 5;
 let drag = null;
 window.addEventListener('mousedown', (event) => {

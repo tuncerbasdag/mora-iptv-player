@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 const PORT = 8911;
 
-/** Gerçek Chrome ile (channel: 'chrome') çalışır: ayrıca tarayıcı indirmeye gerek yok. */
+/** Runs with real Chrome (channel: 'chrome'): no need to download a browser separately. */
 export default defineConfig({
   testDir: '.',
   testMatch: '*.spec.ts',

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { EpisodeNavigator } from '../src/app/episodeNavigation.ts';
 import type { MediaItem, Show } from '../../core/src/types.ts';
 
-const ep = (s: number, e: number): MediaItem => ({ id: `s${s}e${e}`, name: `S${s}E${e}`, group: 'D', kind: 'series', url: `http://x/${s}${e}` });
+const ep = (s: number, e: number): MediaItem => ({ id: `s${s}e${e}`, name: `S${s}E${e}`, group: 'D', kind: 'series', url: `http://example.test/${s}${e}` });
 const show: Show = {
   id: 'x',
   title: 'X',

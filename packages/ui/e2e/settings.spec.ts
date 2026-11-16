@@ -1,6 +1,6 @@
 /**
- * Ayarlar ekranları karakterizasyon testleri (bağlantı listesi, Bağlantı Ekle/Düzenle formu, tema, dil, otomatik güncelleme,
- * EPG, ebeveyn kilidi sayfaları). Uygulama harness'ı (/app) üzerinden gerçek ekranlar, bellek deposu ve sahte oynatıcı ile.
+ * Characterization tests for the Settings screens (connection list, Add/Edit Connection form, theme, language, auto-update,
+ * EPG, parental-lock pages). Real screens, in-memory store and fake player, via the app harness (/app).
  */
 import { expect, test, type Page } from '@playwright/test';
 
@@ -87,7 +87,7 @@ test.describe('Add Connection form', () => {
     expect(c.length).toBe(2);
     expect(c[1].name).toBe('Yeni Liste');
     expect(c[1].source).toEqual({ kind: 'm3u', url: 'http://a.test/x.m3u' });
-    expect((await settings(page)).activeConnectionId).toBe('c1'); // aktif bağlantı değişmez
+    expect((await settings(page)).activeConnectionId).toBe('c1'); // active connection doesn't change
     await expect(page.getByText('Yeni Liste')).toBeVisible();
   });
 
@@ -102,7 +102,7 @@ test.describe('Add Connection form', () => {
     await page.locator('[data-focus-id="save-btn"]').click();
     expect(await errors(page)).toEqual(['Sunucu adresi girmek zorunlu.', 'Kullanıcı adı girmek zorunlu.', 'Şifre girmek zorunlu.']);
     expect(await focusedId(page)).toBe('f-server');
-    await field(page, 'f-server').fill('http://x.test:8080');
+    await field(page, 'f-server').fill('http://example.test:8080');
     expect(await errors(page)).toEqual(['Kullanıcı adı girmek zorunlu.', 'Şifre girmek zorunlu.']);
     await field(page, 'f-user').fill('ali');
     await field(page, 'f-pass').fill('p@ss');
@@ -112,7 +112,7 @@ test.describe('Add Connection form', () => {
     await page.locator('[data-focus-id="save-btn"]').click();
     await expect(page.locator('[data-focus-id="add-btn"]')).toBeVisible();
     const c = (await settings(page)).connections;
-    expect(c[1].source).toMatchObject({ kind: 'xtream', server: 'http://x.test:8080', username: 'ali', password: 'p@ss' });
+    expect(c[1].source).toMatchObject({ kind: 'xtream', server: 'http://example.test:8080', username: 'ali', password: 'p@ss' });
   });
 
   test('Cancel returns to the list; "Uzaktan Yükle" is visible only if configured', async ({ page }) => {
@@ -153,7 +153,7 @@ test.describe('Edit Connection form', () => {
     await expect(page.locator('[data-focus-id="kind-m3u"]')).toHaveCount(0);
     await expect(page.locator('[data-focus-id="f-active"]')).toHaveAttribute('aria-checked', 'true');
     await page.locator('[data-focus-id="f-active"]').click();
-    await expect(page.locator('[data-focus-id="f-active"]')).toHaveAttribute('aria-checked', 'true'); // aktif doğrudan pasife alınamaz
+    await expect(page.locator('[data-focus-id="f-active"]')).toHaveAttribute('aria-checked', 'true'); // the active one can't be set to inactive directly
     await expect(page.getByText('Aynı anda yalnızca bir bağlantı aktif olabilir.')).toBeVisible();
     await expect(page.getByText(/^Son kontrol: /)).toBeVisible();
     await expect(page.locator('[data-focus-id="delete-btn"]')).toBeVisible();
@@ -172,7 +172,7 @@ test.describe('Edit Connection form', () => {
   test('an Xtream connection is edited with account fields; when an inactive connection is activated the other becomes inactive', async ({ page }) => {
     await openSettings(page, { second: true });
     await page.locator('[data-focus-id="conn-1"]').click();
-    await expect(field(page, 'f-server')).toHaveValue('http://x.test:8080');
+    await expect(field(page, 'f-server')).toHaveValue('http://example.test:8080');
     await expect(field(page, 'f-user')).toHaveValue('ali');
     await expect(field(page, 'f-pass')).toHaveValue('gizli');
     await expect(page.getByText('Bunu aktif edersen şu an aktif olan “Deneme Listesi” pasif olur.')).toBeVisible();
@@ -192,12 +192,12 @@ test.describe('Edit Connection form', () => {
     await page.locator('[data-focus-id="conn-1"]').click();
     await page.locator('[data-focus-id="delete-btn"]').click();
     await expect(page.getByText('“İkinci Liste” bağlantısını silmek istediğine emin misin?')).toBeVisible();
-    await press(page, 'Escape'); // Geri yalnızca diyaloğu kapatır, formdan çıkmaz
+    await press(page, 'Escape'); // Back only closes the dialog, doesn't leave the form
     await expect(page.getByText('“İkinci Liste” bağlantısını silmek istediğine emin misin?')).toBeHidden();
     await expect(page.locator('[data-focus-id="delete-btn"]')).toBeVisible();
     expect((await settings(page)).connections.length).toBe(2);
     await page.locator('[data-focus-id="delete-btn"]').click();
-    await page.locator('[data-focus-id="confirm-cancel"]').click(); // Vazgeç düğmesi de kapatır
+    await page.locator('[data-focus-id="confirm-cancel"]').click(); // the Cancel button closes it too
     await expect(page.locator('[data-focus-id="delete-btn"]')).toBeVisible();
     await page.locator('[data-focus-id="delete-btn"]').click();
     await page.locator('[data-focus-id="confirm-ok"]').click();

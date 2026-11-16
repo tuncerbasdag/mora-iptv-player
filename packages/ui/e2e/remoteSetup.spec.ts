@@ -1,6 +1,6 @@
 /**
- * Uzaktan Yükle ekranı (remoteSetup.ts) karakterizasyon testleri: portal (sahte, Playwright ağ yönlendirmesiyle) kayıt ve
- * yoklama yanıtlarına göre PIN gösterimi, liste teslimi, süre dolumu, erişim hatası ve yeniden deneme. Uygulama harness'ı (/app).
+ * Characterization tests for the Remote Setup screen (remoteSetup.ts): based on the portal's (fake, via Playwright network routing) registration and
+ * polling responses — PIN display, list delivery, expiry, access error and retry. App harness (/app).
  */
 import { expect, test, type Page, type Route } from '@playwright/test';
 
@@ -8,9 +8,9 @@ const PORTAL = 'http://portal.test:8788';
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
 
 interface FakePortal {
-  /** Sıradaki kayıt yanıtları (tükenince sonuncusu tekrarlanır); 'fail' = ağ hatası. */
+  /** Upcoming registration responses (the last one repeats when exhausted); 'fail' = network error. */
   registers: Array<{ pin: string; secret?: string } | 'fail'>;
-  /** Yoklama yanıtı. */
+  /** Polling response. */
   poll: { status: 'waiting' } | { status: 'expired' } | { status: 'delivered'; payload: { url: string; name?: string } };
   registerCalls: number;
   pollCalls: number;
@@ -100,7 +100,7 @@ test('"Yeni PIN Al" registers with the portal again', async ({ page }) => {
 
 test('if the portal cannot be reached an error is shown and it retries after 5 s', async ({ page }) => {
   const portal = newPortal({ registers: ['fail', { pin: '9999' }] });
-  await openRemote(page, portal, true).catch(() => {}); // ilk kayıt başarısız: MAC kutusu görünür, PIN "—"
+  await openRemote(page, portal, true).catch(() => {}); // first registration failed: MAC box visible, PIN "—"
   await expect(page.getByText('Portala ulaşılamıyor, yeniden deneniyor...')).toBeVisible();
   await page.clock.fastForward(5100);
   await expect(page.getByText('9999')).toBeVisible();
@@ -115,7 +115,7 @@ test('it retries on a polling error; Cancel/Back returns to the list and polling
   const before = portal.pollCalls;
   await page.clock.fastForward(10000);
   await page.waitForTimeout(300);
-  expect(portal.pollCalls).toBe(before); // ekran kapandı: yoklama yok
+  expect(portal.pollCalls).toBe(before); // screen closed: no polling
   expect((await settings(page)).connections.length).toBe(1);
 });
 

@@ -1,6 +1,6 @@
 /**
- * Ayarlar sayfaları karakterizasyon testleri: Otomatik Güncelle, EPG, Tema, Dil ve Ebeveyn Kilidi (ana sayfa, PIN değiştirme
- * sihirbazı, kategori kilitleri). Uygulama harness'ı (/app) üzerinden gerçek ekranlar ve bellek deposu ile.
+ * Characterization tests for the Settings pages: Auto Update, EPG, Theme, Language and Parental Lock (home page, PIN change
+ * wizard, category locks). Real screens and in-memory store, via the app harness (/app).
  */
 import { expect, test, type Page } from '@playwright/test';
 
@@ -19,7 +19,7 @@ async function enterPin(page: Page, pin: string): Promise<void> {
   for (const d of pin) await page.keyboard.press(d);
   await page.locator('[data-focus-id="pin-ok"]').click();
 }
-/** Ebeveyn Kilidi sayfasına PIN (0000) ile girer. */
+/** Enters the Parental Lock page with the PIN (0000). */
 async function openParental(page: Page, opts: Opts = {}): Promise<void> {
   await openPage(page, 'parental', { parental: true, ...opts });
   await enterPin(page, '0000');
@@ -51,7 +51,7 @@ test.describe('auto-update and EPG on open', () => {
 
   test('Back button and navigation: switch → Back', async ({ page }) => {
     await openPage(page, 'auto');
-    expect(await focusedId(page)).toBe('nav-auto'); // sayfaya menüden girildi: odak menüde
+    expect(await focusedId(page)).toBe('nav-auto'); // entered the page from the menu: focus is on the menu
     await press(page, 'ArrowRight');
     expect(await focusedId(page)).toBe('toggle');
     await press(page, 'ArrowDown');
@@ -108,7 +108,7 @@ test.describe('theme and language', () => {
     await expect(page.locator('[data-focus-id="lang-tr"]')).toContainText('Şu an kullanılan dil');
     await expect(page.getByText('Yakında')).toBeVisible();
     await expect(page.getByText('Şimdilik yalnızca Türkçe kullanılabilir.')).toBeVisible();
-    await page.getByText('English').click({ force: true }); // seçilemez (disabled görünümlü)
+    await page.getByText('English').click({ force: true }); // can't be selected (looks disabled)
     expect((await settings(page)).language).toBe('tr');
   });
 });
@@ -120,7 +120,7 @@ test.describe('parental lock page', () => {
     await page.locator('[data-focus-id="p-master"]').click();
     await expect(page.locator('[data-focus-id="p-master"]')).toContainText('Kapalı');
     expect((await settings(page)).parental.enabled).toBe(false);
-    // kapalıyken PIN ve içerik satırları gizli/pasif
+    // when off, the PIN and content rows are hidden/inactive
     await expect(page.locator('[data-focus-id="p-adult"]')).toHaveCount(0);
     await page.locator('[data-focus-id="p-master"]').click();
     await expect(page.locator('[data-focus-id="p-adult"]')).toBeVisible();
@@ -170,14 +170,14 @@ test.describe('PIN change wizard', () => {
     await expect(page.getByText('Adım 2/3 · Yeni 4 haneli PIN\'ini gir.')).toBeVisible();
     await enterPin(page, '4321');
     await expect(page.getByText('Adım 3/3 · Yeni PIN\'ini bir kez daha gir.')).toBeVisible();
-    await enterPin(page, '1111'); // eşleşmedi
+    await enterPin(page, '1111'); // didn't match
     await expect(page.getByText('PIN\'ler eşleşmedi. Yeni PIN\'i baştan gir.')).toBeVisible();
     await expect(page.getByText('Adım 2/3')).toBeVisible();
     await enterPin(page, '4321');
     await enterPin(page, '4321');
-    await expect(page.locator('[data-focus-id="p-master"]')).toBeVisible(); // ebeveyn sayfasına dönüldü
+    await expect(page.locator('[data-focus-id="p-master"]')).toBeVisible(); // returned to the parental page
     expect((await settings(page)).parental.pinHash).not.toBeNull();
-    // anasayfada kilit düğmesi: eski PIN artık reddedilir, yenisi kabul edilir
+    // lock button on the home page: the old PIN is now rejected, the new one is accepted
     await press(page, 'Escape');
     await page.locator('[data-focus-id="lock-btn"]').click();
     await enterPin(page, '0000');
@@ -207,9 +207,9 @@ test.describe('PIN keypad', () => {
     await page.locator('[data-focus-id="pin-del"]').click();
     expect(await dots()).toBe(1);
     await expect(page.locator('[data-focus-id="pin-ok"]')).toHaveClass(/disabled/);
-    await page.locator('[data-focus-id="pin-ok"]').click(); // pasif: bir şey olmaz
+    await page.locator('[data-focus-id="pin-ok"]').click(); // inactive: nothing happens
     await expect(page.locator('.pin-grid')).toBeVisible();
-    await page.locator('[data-focus-id="pin-5"]').click(); // ekran tuşuna tıklayarak da girilir
+    await page.locator('[data-focus-id="pin-5"]').click(); // can also be entered by clicking the on-screen key
     expect(await dots()).toBe(2);
     await page.locator('[data-focus-id="cancel-btn"]').click();
     await expect(page.getByText('IPTV Player', { exact: true })).toBeVisible();

@@ -40,7 +40,7 @@ export function withNewPin(p: ParentalSettings, pin: string, salt = Math.random(
 
 const ADULT = /(\bxxx\b|\badults?\b|\+\s?18|\b18\s?\+|\bporn\w*|\berotic\w*|\berotik\w*|\by[eé]tişkin|\byetiskin|\bsex\b|\bsexy\b)/i;
 
-/** Whether the category name signals adult content ("XXX", "Adult", "+18", "Yetişkin" [Turkish for "Adult"], ...). */
+/** Whether the category name signals adult content ("XXX", "Adult", "+18", localized equivalents, ...). */
 export function isAdultCategory(name: string): boolean {
   return ADULT.test(name);
 }

@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const watch = process.argv.includes('--watch');
 
-/** Depo kökündeki .env dosyasını okur (KEY=değer satırları); dosya yoksa boş döner. Gerçek ortam değişkeni önceliklidir. */
+/** Reads the .env file at the repo root (KEY=value lines); returns empty if the file doesn't exist. A real environment variable takes precedence. */
 async function loadEnv() {
   const env = {};
   try {
@@ -15,7 +15,7 @@ async function loadEnv() {
       if (m && !line.trim().startsWith('#')) env[m[1]] = m[2].replace(/^(['"])(.*)\1$/, '$2');
     }
   } catch {
-    // .env yok: aşağıda uyarılır.
+    // No .env: a warning is printed below.
   }
   return { ...env, ...process.env };
 }
@@ -32,11 +32,11 @@ const options = {
   outfile: `${__dirname}bundle.js`,
   bundle: true,
   format: 'iife',
-  // Tizen 4/5 TV'lerin gömülü tarayıcısı eski Chromium tabanlı olabilir.
+  // The embedded browser on Tizen 4/5 TVs may be based on an old Chromium.
   target: 'chrome56',
   sourcemap: true,
   logLevel: 'info',
-  // Derleme zamanında gömülür; adres depoda değil, yerel .env dosyasında durur.
+  // Embedded at build time; the address lives in the local .env file, not in the repo.
   define: { __PORTAL_URL__: JSON.stringify(portalUrl), __APP_VERSION__: JSON.stringify(version) },
 };
 

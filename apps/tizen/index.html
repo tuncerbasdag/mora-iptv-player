@@ -8,12 +8,12 @@
   </head>
   <body>
     <!--
-      Gerçek video konumu/boyutu webapis.avplay.setDisplayRect() ile ayrı bir donanım
-      katmanında belirleniyor (bkz. tizenPlayerAdapter.ts) — bu <object>'in CSS boyutu
-      oynatmayı etkilemiyor, sadece AVPlay API bağlamının var olması için gerekli.
-      Küçük tutuyoruz: Tizen dışı bir tarayıcıda önizlerken (bu sadece kozmetik bir
-      önizleme kolaylığı, gerçek TV'de AVPlay tanınır ve bu kutu hiç görünmez)
-      "eklenti desteklenmiyor" kutusunun tüm ekranı kaplamasını önler.
+      The actual video position/size is set on a separate hardware layer via webapis.avplay.setDisplayRect()
+      (see tizenPlayerAdapter.ts) — the CSS size of this <object>
+      does not affect playback; it is only needed so the AVPlay API context exists.
+      We keep it small: when previewing in a non-Tizen browser (this is only a cosmetic
+      preview convenience; on a real TV AVPlay is recognized and this box is never shown)
+      it keeps the "plugin not supported" box from covering the whole screen.
     -->
     <object id="av-player" type="application/avplayer" style="position: absolute; top: 0; left: 0; width: 1px; height: 1px; z-index: -1"></object>
     <div id="app"></div>

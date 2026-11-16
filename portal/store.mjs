@@ -1,13 +1,13 @@
 import { randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 
-/** Bir cihaz oturumunun (TV'deki "Uzaktan Yükle" ekranı) açık kalma süresi; her yoklamada yenilenir. */
+/** How long a device session (the TV's "Remote Setup" screen) stays open; renewed on every poll. */
 export const SESSION_TTL_MS = 15 * 60 * 1000;
-/** Yanlış PIN denemesi bu sayıya ulaşınca oturum kilitlenir (TV'nin yeni PIN alması gerekir). */
+/** When wrong PIN attempts reach this number the session is locked (the TV must get a new PIN). */
 export const MAX_PIN_FAILURES = 5;
 const MAX_URL_LENGTH = 2048;
 const MAX_NAME_LENGTH = 60;
 
-/** "aa-bb-cc-dd-ee-ff" / "AABBCCDDEEFF" → "AA:BB:CC:DD:EE:FF"; geçersizse null. */
+/** "aa-bb-cc-dd-ee-ff" / "AABBCCDDEEFF" → "AA:BB:CC:DD:EE:FF"; null if invalid. */
 export function normalizeMac(input) {
   const hex = String(input ?? '').replace(/[^0-9a-f]/gi, '').toUpperCase();
   if (hex.length !== 12) return null;
@@ -32,9 +32,9 @@ function safeEqual(a, b) {
 }
 
 /**
- * Bellek içi oturum deposu. Akış: TV register() ile PIN + gizli anahtar alır ve poll() ile bekler;
- * kullanıcı sitede MAC + PIN + liste adresini push() eder; TV bir sonraki poll()'da veriyi bir kez
- * alır (alınca silinir). MAC tek başına bir yetki değildir: okumak gizli anahtar, yazmak PIN ister.
+ * In-memory session store. Flow: the TV gets a PIN + secret key with register() and waits with poll();
+ * the user push()es the MAC + PIN + list address on the site; the TV receives the data once on the next poll()
+ * (it is deleted once received). The MAC alone is not an authorization: reading requires the secret key, writing requires the PIN.
  */
 export function createStore({ now = Date.now } = {}) {
   const sessions = new Map();
@@ -87,7 +87,7 @@ export function createStore({ now = Date.now } = {}) {
       s.expiresAt = now() + SESSION_TTL_MS;
       if (!s.payload) return { status: 'waiting' };
       const payload = s.payload;
-      s.payload = null; // tek seferlik: adres (içinde kimlik bilgisi olabilir) sunucuda kalmaz
+      s.payload = null; // one-time: the address (may contain credentials) doesn't stay on the server
       return { status: 'delivered', payload };
     },
 

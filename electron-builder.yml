@@ -4,7 +4,7 @@ copyright: Copyright (c) 2026 Tuncer Başdağ
 directories:
   output: release
   buildResources: build
-# Pakete yalnızca masaüstü kabuğu + web sunucusu + derlenmiş arayüz girer (kaynak kod, testler, Tizen ve portal girmez).
+# Only the desktop shell + web server + built UI go into the package (source code, tests, Tizen and portal are excluded).
 files:
   - package.json
   - LICENSE
@@ -15,13 +15,13 @@ files:
   - apps/web/public/**
   - "!apps/web/public/**/*.map"
 asar: true
-# Dosya adları sabit ve boşluksuz: GitHub release varlıkları ve güncelleme dosyaları (latest*.yml) bunlara bakar.
+# File names are fixed and have no spaces: GitHub release assets and update files (latest*.yml) refer to them.
 artifactName: Mora-IPTV-Player-${version}-${os}-${arch}.${ext}
 mac:
   category: public.app-category.video
   target:
     - { target: dmg, arch: [arm64, x64] }
-    - { target: zip, arch: [arm64, x64] } # macOS otomatik güncellemesi zip ister
+    - { target: zip, arch: [arm64, x64] } # macOS auto-update requires a zip
 win:
   target:
     - { target: nsis, arch: [x64] }
@@ -33,4 +33,4 @@ publish:
   provider: github
   owner: tuncerbasdag
   repo: mora-iptv-player
-  releaseType: draft # taslak olarak yüklenir; kontrol edip GitHub'da "Publish" dersin, güncelleme o zaman görünür olur
+  releaseType: draft # uploaded as a draft; after you review it and click "Publish" on GitHub, the update becomes visible

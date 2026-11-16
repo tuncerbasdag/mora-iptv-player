@@ -1,6 +1,6 @@
 /**
- * Dizi detayı (showDetail.ts) karakterizasyon testleri: bilgi paneli, "Oynat/Devam et" hedefi, favori, sezon sekmeleri,
- * bölüm listesi (durum metinleri, küçük resimler) ve ok tuşu gezinme sırası. Uygulama harness'ı (/app) üzerinden.
+ * Characterization tests for series detail (showDetail.ts): info panel, "Play/Continue" target, favorite, season tabs,
+ * episode list (status texts, thumbnails) and arrow-key navigation order. Via the app harness (/app).
  */
 import { expect, test, type Page } from '@playwright/test';
 
@@ -39,9 +39,9 @@ test.describe('info panel', () => {
     await openShow(page, 'Numarasız');
     await expect(page.locator('[data-focus-id^="season-"]')).toHaveCount(0);
     await expect(page.getByText(/sezon/)).toHaveCount(0);
-    await expect(play(page)).toHaveText('Oynat'); // "S1 B1" eki yok
+    await expect(play(page)).toHaveText('Oynat'); // no "S1 B1" suffix
     expect(await rowNames(page)).toEqual(['Numarasız Dizi - Kayıt 1', 'Numarasız Dizi - Kayıt 2', 'Numarasız Dizi - Kayıt 3']);
-    expect(await page.locator('.vod-ep-num').allTextContents()).toEqual(['1', '2', '3']); // sıra numarası
+    expect(await page.locator('.vod-ep-num').allTextContents()).toEqual(['1', '2', '3']); // sequence number
   });
 
   test('the Back key and the "Diziler" heading return to the browser', async ({ page }) => {
@@ -68,7 +68,7 @@ test.describe('Play / Continue target', () => {
     await expect(play(page)).toContainText('Oynat · S1 B2');
     await openShow(page, 'Gece', { progress: [['s1e2', 2990, 3000]] });
     await expect(play(page)).toContainText('Oynat · S2 B1');
-    await expect(page.locator('[data-focus-id="season-1"]')).toHaveClass(/active/); // hedefin sezonu açık gelir
+    await expect(page.locator('[data-focus-id="season-1"]')).toHaveClass(/active/); // the target's season opens by default
     await openShow(page, 'Gece', { progress: [['s2e2', 2990, 3000]] });
     await expect(play(page)).toContainText('Oynat · S2 B2');
   });
@@ -111,7 +111,7 @@ test.describe('season tabs and episode list', () => {
     expect(await focusedId(page)).toBe('season-1');
     await expect(page.locator('[data-focus-id="season-1"]')).toHaveClass(/active/);
     await expect(page.locator('[data-focus-id="ep-1-0"]')).toBeVisible();
-    await page.locator('[data-focus-id="season-0"]').click(); // tıklama da seçer
+    await page.locator('[data-focus-id="season-0"]').click(); // clicking selects too
     await expect(page.locator('[data-focus-id="ep-0-0"]')).toBeVisible();
   });
 
@@ -133,7 +133,7 @@ test.describe('season tabs and episode list', () => {
     await expect.poll(hits).toBe(12);
     await press(page, 'ArrowDown'); // sekme
     await press(page, 'ArrowDown'); // ep-0-0
-    await press(page, 'ArrowDown', 11); // ep-0-11 → sonraki 6 satırın resmi
+    await press(page, 'ArrowDown', 11); // ep-0-11 → image of the next 6 rows
     await expect.poll(hits).toBeGreaterThan(12);
   });
 });
@@ -143,11 +143,11 @@ test.describe('arrow-key navigation order', () => {
     await openShow(page, 'Gece');
     await press(page, 'ArrowRight');
     expect(await focusedId(page)).toBe('fav');
-    await press(page, 'ArrowRight'); // başka yok
+    await press(page, 'ArrowRight'); // no more
     expect(await focusedId(page)).toBe('fav');
     await press(page, 'ArrowLeft');
     expect(await focusedId(page)).toBe('play');
-    await press(page, 'ArrowUp'); // en üst
+    await press(page, 'ArrowUp'); // topmost
     expect(await focusedId(page)).toBe('play');
     await press(page, 'ArrowDown');
     expect(await focusedId(page)).toBe('season-0');
@@ -155,9 +155,9 @@ test.describe('arrow-key navigation order', () => {
     expect(await focusedId(page)).toBe('ep-0-0');
     await press(page, 'ArrowDown');
     expect(await focusedId(page)).toBe('ep-0-1');
-    await press(page, 'ArrowDown'); // son bölüm: yerinde
+    await press(page, 'ArrowDown'); // last episode: stays in place
     expect(await focusedId(page)).toBe('ep-0-1');
-    await press(page, 'ArrowRight'); // bölümde Sol/Sağ yok
+    await press(page, 'ArrowRight'); // no Left/Right on an episode
     expect(await focusedId(page)).toBe('ep-0-1');
     await press(page, 'ArrowUp', 2);
     expect(await focusedId(page)).toBe('season-0');

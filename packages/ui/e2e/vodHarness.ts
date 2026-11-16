@@ -1,6 +1,6 @@
 /**
- * Film/dizi gezgini (vodBrowser.ts) E2E test sayfası: gerçek ekran, sahte veri/depo ile.
- * Playwright testleri `window.__vodStart(...)` ile kurar, `window.__v` ile geri çağrıları okur.
+ * E2E test page for the movie/series browser (vodBrowser.ts): real screen, with fake data/store.
+ * Playwright tests set it up via `window.__vodStart(...)` and read callbacks via `window.__v`.
  */
 import { applyScaleToFit } from '../src/scaleToFit.ts';
 import { renderVodBrowser, type SortMode, type VodEntry, type VodRestore } from '../src/screens/vodBrowser.ts';
@@ -17,15 +17,15 @@ interface Movie {
 }
 
 interface StartOptions {
-  /** Dizi görünümü: yatay 16:9 poster, 4 sütun, "Yeni bölüm" rozeti. */
+  /** Series view: horizontal 16:9 poster, 4 columns, "New episode" badge. */
   landscape?: boolean;
   favorites?: string[];
-  /** Son izlenenler: [filmId, izlenen sn, süre sn]. */
+  /** Recently watched: [movieId, watched sec, duration sec]. */
   recents?: Array<[string, number, number]>;
   restore?: VodRestore;
-  /** true: yıl/eklenme/süre bilgisi yok (dizi gibi): yalnızca 3 temel sıralama görünür. */
+  /** true: no year/added/duration info (like a series): only the 3 basic sorts are shown. */
   plain?: boolean;
-  /** Verilirse posterler bu anahtarla /logo/ üzerinden istenir (sunucuda sayılır). */
+  /** If given, posters are requested via /logo/ with this key (counted on the server). */
   logoKey?: string;
 }
 
@@ -44,7 +44,7 @@ function makeCategories(o: StartOptions): Category<Movie>[] {
   return [
     { name: 'Aksiyon', items: aksiyon },
     { name: 'Dram', items: dram },
-    { name: 'Kilitli', locked: true, items: [] }, // kilitliyken içerik PIN girilene kadar boş gelir (bkz. Category.locked)
+    { name: 'Kilitli', locked: true, items: [] }, // when locked, content stays empty until the PIN is entered (see Category.locked)
     { name: 'Boş', items: [] },
   ];
 }

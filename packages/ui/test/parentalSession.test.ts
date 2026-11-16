@@ -7,7 +7,7 @@ import type { Library, ParentalSettings } from '../../core/src/types.ts';
 const base: ParentalSettings = { enabled: true, pinSalt: '', pinHash: null, lockAdult: true, lockSettings: false, lockedCategories: [] };
 
 function lib(): Library {
-  const item = (id: string, group: string) => ({ id, name: id, group, kind: 'live' as const, url: `http://x/${id}` });
+  const item = (id: string, group: string) => ({ id, name: id, group, kind: 'live' as const, url: `http://example.test/${id}` });
   return {
     live: [
       { name: 'ULUSAL', items: [item('a', 'ULUSAL')] },

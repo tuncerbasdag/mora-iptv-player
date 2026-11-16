@@ -1,6 +1,6 @@
 /**
- * Anasayfa (welcome.ts) karakterizasyon testleri: kartlar, bağlantı rozeti, ebeveyn kilidi düğmesi, ok tuşu gezinme sırası
- * ve kütüphane güncellenince sayaçlar. Uygulama harness'ı (/app) üzerinden.
+ * Home page (welcome.ts) characterization tests: cards, connection badge, parental-lock button, arrow-key navigation order
+ * and counters when the library is updated. Via the app harness (/app).
  */
 import { expect, test, type Page } from '@playwright/test';
 
@@ -46,7 +46,7 @@ test.describe('cards and badge', () => {
     await card(page, 'movies-card').click();
     await card(page, 'series-card').click();
     await expect(page.getByText('IPTV Player', { exact: true })).toBeVisible(); // hâlâ anasayfa
-    await press(page, 'Enter'); // odaktaki Canlı TV kartı
+    await press(page, 'Enter'); // the focused Live TV card
     await expect(page.getByText('IPTV Player', { exact: true })).toBeVisible();
     await page.locator('[data-focus-id="conn-pill"]').click();
     await expect(page.locator('[data-focus-id="add-btn"]')).toBeVisible();
@@ -55,7 +55,7 @@ test.describe('cards and badge', () => {
   test('Enter opens the cards; the badge and the Settings button open settings', async ({ page }) => {
     await open(page);
     await press(page, 'Enter');
-    await expect(page.locator('.preview-box')).toBeVisible(); // Canlı TV
+    await expect(page.locator('.preview-box')).toBeVisible(); // Live TV
     await press(page, 'Escape');
     await page.locator('[data-focus-id="conn-pill"]').click();
     await expect(page.locator('[data-focus-id="nav-connections"]')).toBeVisible();
@@ -92,11 +92,11 @@ test.describe('arrow-key navigation order', () => {
     await open(page);
     await press(page, 'ArrowUp');
     expect(await focusedId(page)).toBe('settings-btn');
-    await press(page, 'ArrowRight'); // sağda başka yok
+    await press(page, 'ArrowRight'); // nothing else to the right
     expect(await focusedId(page)).toBe('settings-btn');
     await press(page, 'ArrowLeft');
     expect(await focusedId(page)).toBe('conn-pill');
-    await press(page, 'ArrowLeft'); // kilit düğmesi yok: yerinde
+    await press(page, 'ArrowLeft'); // no lock button: stays in place
     expect(await focusedId(page)).toBe('conn-pill');
     await press(page, 'ArrowDown');
     expect(await focusedId(page)).toBe('series-card');

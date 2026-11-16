@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { extractTvgUrl, parseM3U } from '../src/m3u.ts';
 
 const SAMPLE = `﻿#EXTM3U
-#EXTINF:-1 tvg-id="haber1" tvg-logo="http://x/logo.png" group-title="Haber",Haber Kanalı
+#EXTINF:-1 tvg-id="haber1" tvg-logo="http://example.test/logo.png" group-title="Haber",Haber Kanalı
 http://example.com/live/haber1.m3u8
 #EXTINF:-1,Spor Kanalı
 #EXTGRP:Spor
@@ -30,20 +30,20 @@ test('#EXTGRP applies to an entry without group-title', () => {
 });
 
 test("blank lines and unknown directives starting with # are skipped", () => {
-  const text = '#EXTM3U\n#EXTVLCOPT:x\n\n#EXTINF:-1,Tek\nhttp://x/y\n';
+  const text = '#EXTM3U\n#EXTVLCOPT:x\n\n#EXTINF:-1,Tek\nhttp://example.test/y\n';
   const entries = parseM3U(text);
   assert.equal(entries.length, 1);
   assert.equal(entries[0].name, 'Tek');
 });
 
 test('extractTvgUrl: returns the url-tvg attribute if present', () => {
-  const text = '#EXTM3U url-tvg="http://x/epg.xml.gz"\n#EXTINF:-1,Tek\nhttp://x/y\n';
-  assert.equal(extractTvgUrl(text), 'http://x/epg.xml.gz');
+  const text = '#EXTM3U url-tvg="http://example.test/epg.xml.gz"\n#EXTINF:-1,Tek\nhttp://example.test/y\n';
+  assert.equal(extractTvgUrl(text), 'http://example.test/epg.xml.gz');
 });
 
 test('extractTvgUrl: the x-tvg-url attribute is supported too', () => {
-  const text = '#EXTM3U x-tvg-url="http://x/epg2.xml"\n#EXTINF:-1,Tek\nhttp://x/y\n';
-  assert.equal(extractTvgUrl(text), 'http://x/epg2.xml');
+  const text = '#EXTM3U x-tvg-url="http://example.test/epg2.xml"\n#EXTINF:-1,Tek\nhttp://example.test/y\n';
+  assert.equal(extractTvgUrl(text), 'http://example.test/epg2.xml');
 });
 
 test('extractTvgUrl: returns undefined if there is none', () => {

@@ -1,7 +1,7 @@
 /**
- * Oynatıcı katmanı (playerOverlay.ts) E2E test sayfası: gerçek PlayerController + gerçek ekran,
- * sahte PlayerAdapter ile. Playwright testleri `window.__ovStart(...)` ile kurar, `window.__o` ile
- * oynatıcı çağrılarını okur ve olay gönderir.
+ * E2E test page for the player overlay (playerOverlay.ts): real PlayerController + real screen,
+ * with a fake PlayerAdapter. Playwright tests set it up via `window.__ovStart(...)` and, via `window.__o`,
+ * read player calls and send events.
  */
 import { BasePlayerAdapter } from '../src/basePlayerAdapter.ts';
 import type { DiagnosticsCapable, PlayerAdapter, PlayerAdapterEvent, PlayerDiagnostics } from '../src/playerAdapter.ts';
@@ -16,22 +16,22 @@ type PlayMode = 'ok' | 'fail' | 'blocked' | 'never';
 
 interface OverlayOptions {
   playMode?: PlayMode;
-  /** loadLive/loadVod çağrısından 'playing'e kadar geçen süre (ms). */
+  /** Time (ms) from the loadLive/loadVod call until 'playing'. */
   loadMs?: number;
-  /** Film/dizi süresi (sn). */
+  /** Movie/episode duration (sec). */
   duration?: number;
-  /** Dizi bölüm gezinmesi düğmeleri (önceki/sonraki) görünsün mü. */
+  /** Whether the series episode navigation buttons (previous/next) are visible. */
   episodeNav?: boolean;
-  /** Ses/altyazı parçaları bildirilsin mi. */
+  /** Whether audio/subtitle tracks are reported. */
   tracks?: boolean;
-  /** Kanal değiştirme hedefleri (Yukarı/Aşağı); yoksa null döner. */
+  /** Channel-switch targets (Up/Down); returns null if none. */
   channels?: MediaItem[];
-  /** Altyazı stili (verilmezse DEFAULT_SETTINGS.subtitleStyle). */
+  /** Subtitle style (if omitted, DEFAULT_SETTINGS.subtitleStyle). */
   subtitleStyle?: Settings['subtitleStyle'];
 }
 
-const LIVE: MediaItem = { id: 'l1', name: 'TR:TRT 1 HD', group: 'ULUSAL', kind: 'live', url: 'http://fake.test/live/trt1.m3u8' };
-const LIVE2: MediaItem = { id: 'l2', name: 'TR:SHOW TV HD', group: 'ULUSAL', kind: 'live', url: 'http://fake.test/live/show.m3u8' };
+const LIVE: MediaItem = { id: 'l1', name: 'TR:ALPHA 1 HD', group: 'ULUSAL', kind: 'live', url: 'http://fake.test/live/alpha1.m3u8' };
+const LIVE2: MediaItem = { id: 'l2', name: 'TR:BRAVO TV HD', group: 'ULUSAL', kind: 'live', url: 'http://fake.test/live/bravo.m3u8' };
 export const ITEMS: Record<string, MediaItem> = {
   live: LIVE,
   live2: LIVE2,
@@ -47,7 +47,7 @@ export const ITEMS: Record<string, MediaItem> = {
 };
 
 class FakeAdapter extends BasePlayerAdapter implements PlayerAdapter, DiagnosticsCapable {
-  /** Tanı paneli testi için elle ayarlanır. */
+  /** Set manually for the diagnostics panel test. */
   diagnostics: PlayerDiagnostics = { engine: 'hls.js', bufferSeconds: 3.2, bufferMode: 'low', holding: false, stalls: 1, droppedFrames: 12, totalFrames: 1450, events: ['12.3 waiting · tampon 0.4', '12.9 playing · tampon 2.1'] };
   getDiagnostics(): PlayerDiagnostics {
     return this.diagnostics;
@@ -78,7 +78,7 @@ class FakeAdapter extends BasePlayerAdapter implements PlayerAdapter, Diagnostic
     this.timers.push(
       setTimeout(() => {
         this.paused = false;
-        this.emit('tracks'); // gerçek motorlar gibi: her yüklemede parça listesi (yeniden) bildirilir
+        this.emit('tracks'); // like real engines: the track list is (re)reported on every load
         this.emit('playing');
         this.emit('stats', { width: 1920, height: 1080, kbps: 4850, fps: 25, codec: 'H.264 · AAC' });
       }, loadMs),
@@ -174,7 +174,7 @@ interface Overlay {
   prev: number;
   next: number;
   steps: number[];
-  /** Kontrolcüyü başlatır: canlı için playLive, film/dizi için playVod. */
+  /** Starts the controller: playLive for live, playVod for movies/series. */
   play: (key: keyof typeof ITEMS) => void;
   emit: (event: PlayerAdapterEvent, ...args: unknown[]) => void;
   setTracks: (audio: MediaTrack[], subs: MediaTrack[]) => void;
@@ -239,13 +239,13 @@ window.__ovStart = (o: OverlayOptions = {}) => {
       ...(o.episodeNav ? { onPrevEpisode: () => void state.prev++, onNextEpisode: () => void state.next++ } : {}),
     },
   );
-  state.handle.controller.vodRetryBaseMs = 200; // yeniden denemeler testte hızlı olsun
+  state.handle.controller.vodRetryBaseMs = 200; // make retries fast in the test
   if (o.tracks) {
     adapter.audio = [
       { id: 0, label: 'Türkçe', detail: 'Stereo' },
       { id: 1, label: 'İngilizce', detail: '5.1' },
     ];
     adapter.subs = [{ id: 0, label: 'Türkçe' }];
-    adapter.emit('tracks'); // gerçek oynatıcılar parça listesi hazır olunca bildirir
+    adapter.emit('tracks'); // real players report this once the track list is ready
   }
 };

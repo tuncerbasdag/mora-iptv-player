@@ -7,7 +7,7 @@ const reply = (info: Record<string, unknown>) => async () => JSON.stringify({ us
 
 test('accountApiUrl: derives player_api.php from a get.php address, null if there are no credentials', () => {
   assert.equal(accountApiUrl(LIST), 'http://prov.example/player_api.php?username=ali&password=p%40ss');
-  assert.equal(accountApiUrl('http://x.test/list.m3u'), null);
+  assert.equal(accountApiUrl('http://example.test/list.m3u'), null);
   assert.equal(accountApiUrl('bozuk'), null);
 });
 
@@ -34,7 +34,7 @@ test('block: gives a message if the account is not active', async () => {
 });
 
 test('does not block when it cannot be verified (not Xtream, network error, corrupt response)', async () => {
-  assert.equal(await checkAccountBlock(reply({}), 'http://x.test/list.m3u'), null);
+  assert.equal(await checkAccountBlock(reply({}), 'http://example.test/list.m3u'), null);
   assert.equal(await checkAccountBlock(async () => { throw new Error('ağ'); }, LIST), null);
   assert.equal(await checkAccountBlock(async () => 'html', LIST), null);
 });

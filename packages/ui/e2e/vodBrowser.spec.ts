@@ -1,6 +1,6 @@
 /**
- * Film/dizi gezgini (vodBrowser.ts) karakterizasyon testleri: gerçek Chrome'da, sahte veri/depo ile.
- * Amaç, dosyayı parçalara bölerken davranışın değişmediğini doğrulamak. `npm run test:e2e`.
+ * Characterization tests for the movie/series browser (vodBrowser.ts): in real Chrome, with fake data/store.
+ * The goal is to verify that behavior doesn't change while splitting the file into parts. `npm run test:e2e`.
  */
 import { expect, test, type Page } from '@playwright/test';
 
@@ -65,15 +65,15 @@ test.describe('grid and paging', () => {
     await open(page);
     await expect(page.getByText('Tüm filmler', { exact: true })).toBeVisible();
     expect(await cards(page).count()).toBe(60);
-    await sideRows(page).filter({ hasText: 'Tüm Filmler' }).click(); // ilk karta
+    await sideRows(page).filter({ hasText: 'Tüm Filmler' }).click(); // to the first card
     await page.evaluate(() => document.querySelector<HTMLElement>('[data-focus-id="vi-55"]')!.scrollIntoView());
-    for (let i = 0; i < 11; i++) await press(page, 'ArrowDown'); // 55. karta kadar inilir
+    for (let i = 0; i < 11; i++) await press(page, 'ArrowDown'); // down until the 55th card
     await expect.poll(() => cards(page).count()).toBe(92);
   });
 
   test('the "Yeni" badge shows on items added in the last 14 days', async ({ page }) => {
     await open(page);
-    // i % 40 < 14 → ilk 14 film yeni; 15. değil
+    // i % 40 < 14 → the first 14 movies are new; the 15th is not
     const first = cards(page).nth(0).locator('.vod-new');
     await expect(first).toHaveText('Yeni');
     await expect(cards(page).nth(13).locator('.vod-new')).toHaveCount(1);
@@ -101,7 +101,7 @@ test.describe('recents', () => {
     expect(await recents(page).count()).toBe(3);
     await expect(recents(page).nth(0).locator('.vod-sub')).toHaveText('30 dk kaldı');
     await expect(recents(page).nth(1).locator('.vod-sub')).toHaveText('İzlendi');
-    await expect(recents(page).nth(2).locator('.vod-sub')).toHaveText('2009'); // süre yok: normal alt yazı
+    await expect(recents(page).nth(2).locator('.vod-sub')).toHaveText('2009'); // no duration: normal subtitle
     await expect(recents(page).nth(0).locator('.vod-resume-pill')).toHaveText('Devam et');
     const fill = await recents(page).nth(0).locator('div[style*="width:50%"], div[style*="width: 50%"]').count();
     expect(fill).toBe(1);
@@ -139,7 +139,7 @@ test.describe('search and sorting', () => {
     await page.locator('.vod-sort-opt', { hasText: 'Ada göre (Z–A)' }).click();
     await expect(page.locator('.vod-sort')).toContainText('Ada göre (Z–A)');
     expect((await titles(page))[0]).toBe('Dram Film 012');
-    // yeniden aç, Geri ile kapat (gezgin kapanmaz)
+    // reopen, close with Back (the browser doesn't close)
     await page.locator('.vod-sort').click();
     await expect(page.locator('.vod-sort-panel')).toBeVisible();
     await press(page, 'Escape');
@@ -152,7 +152,7 @@ test.describe('search and sorting', () => {
     await open(page);
     await page.locator('.vod-sort').click();
     await page.locator('.vod-sort-opt', { hasText: 'Yıla göre' }).click();
-    expect((await titles(page))[0]).toMatch(/Film (025|050|075|\d+)/); // 2024 yılı olanlar başta
+    expect((await titles(page))[0]).toMatch(/Film (025|050|075|\d+)/); // the ones from 2024 come first
     const firstYear = await cards(page).nth(0).locator('.vod-sub').textContent();
     expect(firstYear).toBe('2024');
     await page.locator('.vod-sort').click();
@@ -189,11 +189,11 @@ test.describe('navigation (5-column vertical grid)', () => {
     expect(await focusedId(page)).toBe('vi-6');
     await press(page, 'ArrowLeft');
     expect(await focusedId(page)).toBe('vi-5');
-    await press(page, 'ArrowLeft'); // satırın ilk kartı: menüye
+    await press(page, 'ArrowLeft'); // first card in the row: to the menu
     expect(await focusedId(page)).toBe('vcat-all');
     await press(page, 'ArrowRight', 5);
     expect(await focusedId(page)).toBe('vi-4');
-    await press(page, 'ArrowRight'); // satır sonu: yerinde
+    await press(page, 'ArrowRight'); // end of row: stays in place
     expect(await focusedId(page)).toBe('vi-4');
   });
 
@@ -209,14 +209,14 @@ test.describe('navigation (5-column vertical grid)', () => {
     expect(await focusedId(page)).toBe('vi-0');
     await open(page, { recents: [['Aksiyon-1', 100, 3600], ['Aksiyon-2', 100, 3600]] });
     await press(page, 'ArrowRight');
-    expect(await focusedId(page)).toBe('vr-0'); // menüden Sağ: önce son izlenenler
+    expect(await focusedId(page)).toBe('vr-0'); // Right from the menu: recently watched first
     await press(page, 'ArrowRight');
     expect(await focusedId(page)).toBe('vr-1');
-    await press(page, 'ArrowRight'); // satır sonu
+    await press(page, 'ArrowRight'); // end of row
     expect(await focusedId(page)).toBe('vr-1');
     await press(page, 'ArrowDown');
     expect(await focusedId(page)).toBe('vi-1');
-    await press(page, 'ArrowUp', 2); // ızgara ilk satırı → son izlenenler → arama
+    await press(page, 'ArrowUp', 2); // grid first row → recently watched → search
     expect(await focusedId(page)).toBe('vsearch');
   });
 
@@ -227,10 +227,10 @@ test.describe('navigation (5-column vertical grid)', () => {
     await press(page, 'ArrowDown', 2); // vi-10
     expect(await focusedId(page)).toBe('vi-10');
     await press(page, 'ArrowUp');
-    await press(page, 'ArrowRight', 4); // vi-9 (sağ uç)
+    await press(page, 'ArrowRight', 4); // vi-9 (right edge)
     expect(await focusedId(page)).toBe('vi-9');
     await press(page, 'ArrowDown');
-    expect(await focusedId(page)).toBe('vi-11'); // altındaki satır kısa: son kart
+    expect(await focusedId(page)).toBe('vi-11'); // the row below is shorter: last card
   });
 
   test('in the menu Up/Down moves only in the menu', async ({ page }) => {
@@ -238,19 +238,19 @@ test.describe('navigation (5-column vertical grid)', () => {
     await press(page, 'ArrowUp');
     expect(await focusedId(page)).toBe('vcat-recent');
     await press(page, 'ArrowUp', 3);
-    expect(await focusedId(page)).toBe('vcat-fav'); // en üstte durur, içeriğe sıçramaz
+    expect(await focusedId(page)).toBe('vcat-fav'); // stays at the top, doesn't jump into the content
   });
 
-  // Eskiden gezinme her ızgarayı 5 sütunlu sayıyordu (dizi ızgarası 4 sütunlu): Aşağı çapraza, Sağ bir sonraki satıra gidiyordu.
+  // Previously navigation counted every grid as 5 columns (the series grid has 4): Down went diagonally, Right went to the next row.
   test('horizontal (series) grid: 4 columns, Down goes to the card below', async ({ page }) => {
     await open(page, { landscape: true });
     await press(page, 'ArrowRight');
     expect(await focusedId(page)).toBe('vi-0');
     await press(page, 'ArrowDown');
     expect(await focusedId(page)).toBe('vi-4');
-    await press(page, 'ArrowRight', 3); // 2. satırın sonuna (4. sütun)
+    await press(page, 'ArrowRight', 3); // to the end of the 2nd row (4th column)
     expect(await focusedId(page)).toBe('vi-7');
-    await press(page, 'ArrowRight'); // bir sonraki satıra taşmaz
+    await press(page, 'ArrowRight'); // doesn't overflow to the next row
     expect(await focusedId(page)).toBe('vi-7');
     await press(page, 'ArrowUp');
     expect(await focusedId(page)).toBe('vi-3');
@@ -315,7 +315,7 @@ test.describe('restore', () => {
     await expect(sideRows(page).nth(4)).toHaveClass(/active/);
     await expect(search(page)).toHaveValue('film 00');
     await expect(page.locator('.vod-sort')).toContainText('Ada göre (Z–A)');
-    // Dram, "film 00" → 9 kart, Z-A: 009..001; Dram-3 ("004") sıra 5 → vi-5
+    // Dram, "film 00" → 9 cards, Z-A: 009..001; Dram-3 ("004") is at position 5 → vi-5
     expect(await focusedId(page)).toBe('vi-5');
   });
 
@@ -344,7 +344,7 @@ test.describe('poster loading', () => {
     await page.waitForTimeout(800);
     const first = await hits(page, k);
     expect(first).toBeGreaterThan(0);
-    expect(first).toBeLessThan(40); // 60 kartın hepsi değil
+    expect(first).toBeLessThan(40); // not all 60 cards
     await page.locator('.hide-scrollbar').nth(1).evaluate((el) => (el.scrollTop = el.scrollHeight));
     await expect.poll(() => hits(page, k)).toBeGreaterThan(first);
   });

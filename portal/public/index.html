@@ -55,8 +55,8 @@
   };
   const $ = (id) => document.getElementById(id);
 
-  // MAC alanı: yalnızca 0-9 A-F, en çok 12 hane, iki hanede bir ":" otomatik eklenir (yapıştırma da dahil).
-  // Sondaki ":" yazılmaz; böylece Backspace ayracı silince takılmaz. İmleç, ortadan düzenlemede yerinde kalır.
+  // MAC field: only 0-9 A-F, at most 12 digits, ":" is inserted automatically after every two digits (including paste).
+  // A trailing ":" isn't written; so Backspace doesn't get stuck when deleting the separator. The caret stays in place when editing in the middle.
   const macInput = $('mac');
   function formatMac(raw) {
     const hex = raw.replace(/[^0-9a-f]/gi, '').toUpperCase().slice(0, 12);

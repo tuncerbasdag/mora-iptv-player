@@ -1,4 +1,4 @@
-// E2E test sunucusu: harness'ı derleyip statik olarak sunar (Playwright `webServer` bunu başlatır).
+// E2E test server: builds the harnesses and serves them statically (started by Playwright's `webServer`).
 import { build } from 'esbuild';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const dir = fileURLToPath(new URL('.', import.meta.url));
 const PORT = Number(process.env.E2E_PORT) || 8911;
 
-/** Her test sayfası kendi harness'ından derlenir: / (Canlı TV), /overlay (oynatıcı), /vod (film/dizi gezgini), /app (tüm uygulama). */
+/** Each test page is built from its own harness: / (Live TV), /overlay (player), /vod (movie/series browser), /app (whole app). */
 const ENTRIES = { '/harness.js': 'harness.ts', '/overlay.js': 'overlayHarness.ts', '/vod.js': 'vodHarness.ts', '/app.js': 'appHarness.ts' };
 const bundles = {};
 for (const [url, file] of Object.entries(ENTRIES)) {
@@ -15,7 +15,7 @@ for (const [url, file] of Object.entries(ENTRIES)) {
     const r = await build({ entryPoints: [`${dir}${file}`], bundle: true, format: 'iife', target: 'chrome110', write: false, logLevel: 'error' });
     bundles[url] = r.outputFiles[0].text;
   } catch (e) {
-    if (!String(e).includes('Could not resolve')) throw e; // henüz yazılmamış harness: atla
+    if (!String(e).includes('Could not resolve')) throw e; // harness not written yet: skip
   }
 }
 
@@ -27,12 +27,12 @@ const FILES = {
   '/styles.css': [`${dir}../src/styles.css`, 'text/css; charset=utf-8'],
 };
 
-/** Logo isteklerini test anahtarına (?k=) göre sayar; paralel testler birbirini etkilemesin. */
+/** Counts logo requests per test key (?k=); so parallel tests don't affect each other. */
 const logoHits = new Map();
 const SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#fff"/></svg>';
 
 createServer(async (req, res) => {
-  const url = new URL(req.url, 'http://x');
+  const url = new URL(req.url, 'http://example.test');
   const path = url.pathname;
   if (path.startsWith('/logo/')) {
     const k = url.searchParams.get('k') ?? '';

@@ -137,7 +137,7 @@ export interface PlayerDiagnostics {
   /** Dropped / total frames as reported by the browser; null if unknown (AVPlay). */
   droppedFrames: number | null;
   totalFrames: number | null;
-  /** Son oynatma olayları (eskiden yeniye), örn. "12.3 waiting · tampon 0.4"; takılmanın NE ZAMAN ve NEDEN olduğunu gösterir. */
+  /** Recent playback events (oldest to newest), e.g. "12.3 waiting · tampon 0.4"; shows WHEN and WHY a stall happens. */
   events: string[];
 }
 

@@ -10,7 +10,7 @@ const SAMPLE_XMLTV = `<tv>
 test('load(): downloads the XML and indexes it by channelId', async () => {
   const svc = new EpgService(async () => SAMPLE_XMLTV);
   assert.equal(svc.isLoaded(), false);
-  await svc.load('http://x/epg.xml');
+  await svc.load('http://example.test/epg.xml');
   assert.equal(svc.isLoaded(), true);
   assert.equal(svc.getPrograms('ch1').length, 2);
   assert.equal(svc.getPrograms('bilinmeyen').length, 0);
@@ -18,7 +18,7 @@ test('load(): downloads the XML and indexes it by channelId', async () => {
 
 test('getCurrentProgram(): returns the programme that matches the given moment', async () => {
   const svc = new EpgService(async () => SAMPLE_XMLTV);
-  await svc.load('http://x/epg.xml');
+  await svc.load('http://example.test/epg.xml');
   const now = Date.UTC(2026, 10, 3, 18, 30, 0);
   const current = svc.getCurrentProgram('ch1', now);
   assert.equal(current?.title, 'A');
@@ -26,7 +26,7 @@ test('getCurrentProgram(): returns the programme that matches the given moment',
 
 test('getCurrentProgram(): returns undefined if no programme matches the moment', async () => {
   const svc = new EpgService(async () => SAMPLE_XMLTV);
-  await svc.load('http://x/epg.xml');
+  await svc.load('http://example.test/epg.xml');
   const now = Date.UTC(2026, 10, 3, 10, 0, 0);
   assert.equal(svc.getCurrentProgram('ch1', now), undefined);
 });

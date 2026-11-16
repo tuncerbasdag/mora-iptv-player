@@ -1,7 +1,7 @@
 import { diagnosticsOf, type PlayerAdapter, type PlayerDiagnostics } from '../../playerAdapter.ts';
 
 const REFRESH_MS = 500;
-/** Panelde gösterilen son olay sayısı. */
+/** Number of latest events shown in the panel. */
 const EVENT_LINES = 6;
 
 /** Converts diagnostics info into lines for on-screen display (pure function). To distinguish the cause of a freeze: if the buffer is dropping to zero it's network, if frames are dropping it's the processor. */

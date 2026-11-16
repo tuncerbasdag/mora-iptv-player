@@ -5,15 +5,15 @@ import { parseM3U } from '../src/m3u.ts';
 
 const SAMPLE = `#EXTM3U
 #EXTINF:-1 tvg-id="h1" group-title="Haber",Haber Kanalı
-http://x/live/h1.m3u8
+http://example.test/live/h1.m3u8
 #EXTINF:-1 group-title="Filmler",Örnek Film
-http://x/movie/film1.mkv
+http://example.test/movie/film1.mkv
 #EXTINF:-1 group-title="Diziler",Örnek Dizi S01E01
-http://x/series/dizi/1/1.mp4
+http://example.test/series/dizi/1/1.mp4
 #EXTINF:-1 group-title="Diziler",Örnek Dizi S01E02
-http://x/series/dizi/1/2.mp4
+http://example.test/series/dizi/1/2.mp4
 #EXTINF:-1 group-title="Diziler",Örnek Dizi S02E01
-http://x/series/dizi/2/1.mp4
+http://example.test/series/dizi/2/1.mp4
 `;
 
 test('live/movie/series counts are computed correctly', () => {
@@ -35,7 +35,7 @@ test('series are grouped in the order category -> series -> season -> episode', 
 
 test('a semicolon-separated group-title adds the channel to each category separately', () => {
   const multi =
-    '#EXTM3U\n#EXTINF:-1 group-title="Entertainment;Family;General",Çoklu Kategori Kanalı\nhttp://x/live/multi.m3u8\n';
+    '#EXTM3U\n#EXTINF:-1 group-title="Entertainment;Family;General",Çoklu Kategori Kanalı\nhttp://example.test/live/multi.m3u8\n';
   const lib = buildLibrary(parseM3U(multi));
   const names = lib.live.map((c) => c.name);
   assert.deepEqual(names, ['Entertainment', 'Family', 'General']);
@@ -46,7 +46,7 @@ test('a semicolon-separated group-title adds the channel to each category separa
 });
 
 test('if the same identifier (name+group+tvg-id) repeats, a -1, -2 suffix is added', () => {
-  const dup = '#EXTM3U\n#EXTINF:-1 group-title="Haber",Aynı Kanal\nhttp://x/live/a.m3u8\n#EXTINF:-1 group-title="Haber",Aynı Kanal\nhttp://x/live/b.m3u8\n';
+  const dup = '#EXTM3U\n#EXTINF:-1 group-title="Haber",Aynı Kanal\nhttp://example.test/live/a.m3u8\n#EXTINF:-1 group-title="Haber",Aynı Kanal\nhttp://example.test/live/b.m3u8\n';
   const lib = buildLibrary(parseM3U(dup));
   const items = lib.live.find((c) => c.name === 'Haber')!.items;
   assert.notEqual(items[0].id, items[1].id);
@@ -55,8 +55,8 @@ test('if the same identifier (name+group+tvg-id) repeats, a -1, -2 suffix is add
 
 test('the same series in several genres (group-title "A;B") has a single identifier and the genres go to separate categories', () => {
   const entries = [
-    { name: 'Avatar S01E01', url: 'http://x.test/series/u/p/1.mkv', attrs: { 'group-title': 'Animation;Kids' }, duration: -1 },
-    { name: 'Avatar S01E02', url: 'http://x.test/series/u/p/2.mkv', attrs: { 'group-title': 'Animation;Kids' }, duration: -1 },
+    { name: 'Cosmo Kids S01E01', url: 'http://example.test/series/u/p/1.mkv', attrs: { 'group-title': 'Animation;Kids' }, duration: -1 },
+    { name: 'Cosmo Kids S01E02', url: 'http://example.test/series/u/p/2.mkv', attrs: { 'group-title': 'Animation;Kids' }, duration: -1 },
   ];
   const lib = buildLibrary(entries);
   assert.deepEqual(lib.series.map((c) => c.name), ['Animation', 'Kids']);

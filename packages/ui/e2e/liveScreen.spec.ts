@@ -1,6 +1,6 @@
 /**
- * Canlı TV ekranı (liveScreen.ts) karakterizasyon testleri: gerçek Chrome'da, sahte oynatıcı/depo ile.
- * Amaç, ekranı parçalara bölerken (refactor) davranışın değişmediğini doğrulamak. `npm run test:e2e`.
+ * Characterization tests for the Live TV screen (liveScreen.ts): in real Chrome, with a fake player/store.
+ * The goal is to verify that behavior doesn't change while splitting the screen into parts (refactor). `npm run test:e2e`.
  */
 import { expect, test, type Page } from '@playwright/test';
 
@@ -17,9 +17,9 @@ const channelNames = (page: Page) => channelRows(page).locator('.row-label').all
 const search = (page: Page) => page.locator('input[type="search"]');
 const focusedId = (page: Page) => page.locator('.focused').first().getAttribute('data-focus-id');
 const calls = (page: Page) => page.evaluate(() => window.__h);
-/** Önizleme kartındaki kanal adı (listedeki satır etiketleri <span>, bu bir <div>). */
+/** Channel name on the preview card (row labels in the list are <span>, this one is a <div>). */
 const previewName = (page: Page, name: string) => page.locator(`div:text-is("${name}")`);
-/** Görünür yükleme halkasının yüzdesi; görünmüyorsa null. */
+/** Percentage of the visible loading ring; null if not visible. */
 const ring = (page: Page) =>
   page.evaluate(() => {
     const el = [...document.querySelectorAll('[role="progressbar"]')].find((e) => getComputedStyle(e).display !== 'none');
@@ -41,7 +41,7 @@ test.describe('list and categories', () => {
   test('when a category is selected the channels are numbered in order', async ({ page }) => {
     await open(page);
     await selectCategory(page, 'SPOR');
-    expect(await channelNames(page)).toEqual(['TR:BEINSPORTS 1 HD', 'TR:BEINSPORTS 2 HD', 'TR:S SPORT']);
+    expect(await channelNames(page)).toEqual(['TR:SPORTS 1 HD', 'TR:SPORTS 2 HD', 'TR:SPORT PLUS']);
     expect(await channelRows(page).locator('.row-number').allTextContents()).toEqual(['01', '02', '03']);
     await expect(categoryRows(page).filter({ hasText: 'SPOR' })).toHaveClass(/active/);
   });
@@ -64,10 +64,10 @@ test.describe('search', () => {
   test('is independent of the category: channels in other categories are found too', async ({ page }) => {
     await open(page);
     await selectCategory(page, 'ULUSAL');
-    await search(page).fill('BRT');
-    expect(await channelNames(page)).toEqual(['TR:BRT 1 HD', 'TR:BRT 3 HD', 'TR:BRT 3 (KIBRIS)']);
+    await search(page).fill('GAMMA');
+    expect(await channelNames(page)).toEqual(['TR:GAMMA 1 HD', 'TR:GAMMA 3 HD', 'TR:GAMMA 3 (KIBRIS)']);
     await expect(page.getByText('3 sonuç')).toBeVisible();
-    await expect(channelRows(page).first().locator('.hl')).toHaveText('BRT');
+    await expect(channelRows(page).first().locator('.hl')).toHaveText('GAMMA');
   });
 
   test('case-insensitive and Turkish-character-insensitive', async ({ page }) => {
@@ -75,7 +75,7 @@ test.describe('search', () => {
     await search(page).fill('kibris');
     expect(await channelNames(page)).toEqual([]);
     await search(page).fill('kıbrıs');
-    expect(await channelNames(page)).toEqual(['TR:BRT 3 (KIBRIS)']);
+    expect(await channelNames(page)).toEqual(['TR:GAMMA 3 (KIBRIS)']);
   });
 
   test('channels in a locked category do not appear in search', async ({ page }) => {
@@ -90,15 +90,15 @@ test.describe('search', () => {
     await search(page).fill('TR:');
     const names = await channelNames(page);
     expect(names.length).toBe(new Set(names).size);
-    expect(names.length).toBe(11); // 5 + 3 + 3 (kilitli hariç)
+    expect(names.length).toBe(11); // 5 + 3 + 3 (excluding locked)
   });
 
   test('when cleared the selected category\'s channels come back', async ({ page }) => {
     await open(page);
     await selectCategory(page, 'SPOR');
-    await search(page).fill('BRT');
+    await search(page).fill('GAMMA');
     await page.locator('input[type="search"]').fill('');
-    expect(await channelNames(page)).toEqual(['TR:BEINSPORTS 1 HD', 'TR:BEINSPORTS 2 HD', 'TR:S SPORT']);
+    expect(await channelNames(page)).toEqual(['TR:SPORTS 1 HD', 'TR:SPORTS 2 HD', 'TR:SPORT PLUS']);
   });
 });
 
@@ -107,9 +107,9 @@ test.describe('preview and loading', () => {
     await open(page, { loadMs: 300 });
     await selectCategory(page, 'ULUSAL');
     await channelRows(page).nth(1).click();
-    expect((await calls(page)).calls.loadLive).toEqual(['http://fake.test/live/show.m3u8']);
+    expect((await calls(page)).calls.loadLive).toEqual(['http://fake.test/live/bravo.m3u8']);
     await expect(channelRows(page).nth(1)).toHaveClass(/active/);
-    await expect(previewName(page, 'TR:SHOW TV HD')).toBeVisible();
+    await expect(previewName(page, 'TR:BRAVO TV HD')).toBeVisible();
     await expect(page.getByText('Kanal 02')).toBeVisible();
     await expect(page.getByText('1080p · 25 fps')).toBeVisible();
     await expect(page.getByText('4.850 kbit/s')).toBeVisible();
@@ -123,7 +123,7 @@ test.describe('preview and loading', () => {
     await channelRows(page).nth(2).click();
     const h = await calls(page);
     expect(h.adaptersCreated).toBe(1);
-    expect(h.calls.loadLive).toEqual(['http://fake.test/live/trt1.m3u8', 'http://fake.test/live/star.m3u8']);
+    expect(h.calls.loadLive).toEqual(['http://fake.test/live/alpha1.m3u8', 'http://fake.test/live/coral.m3u8']);
   });
 
   test('the loading ring progresses smoothly between 0 and 100%, never falls back and closes when the stream starts', async ({ page }) => {
@@ -137,11 +137,11 @@ test.describe('preview and loading', () => {
       if (v !== null) seen.push(v);
     }
     expect(seen.length).toBeGreaterThan(5);
-    // Tampon yüzdesi hep 0 bildirilse bile halka 0'da donmaz...
+    // Even if the buffer percentage is always reported as 0, the ring doesn't freeze at 0...
     expect(Math.max(...seen.slice(0, 15))).toBeGreaterThan(10);
-    // ...ve asla geri düşmez.
+    // ...and never goes back down.
     for (let i = 1; i < seen.length; i++) expect(seen[i]).toBeGreaterThanOrEqual(seen[i - 1]);
-    // İlk kare gelince %100'e tamamlanıp kapanır.
+    // When the first frame arrives it completes to 100% and closes.
     await expect.poll(() => ring(page), { timeout: 5000 }).toBeNull();
   });
 
@@ -171,19 +171,19 @@ test.describe('favorites', () => {
     await expect(fav).toBeVisible();
     await fav.click();
     await expect(page.getByText('Favorilerden çıkar')).toBeVisible();
-    expect(await page.evaluate(() => window.__h.favorites())).toEqual(['bein2']);
+    expect(await page.evaluate(() => window.__h.favorites())).toEqual(['sports2']);
     await expect(channelRows(page).nth(1).locator('.favorite-star')).toHaveText('★');
 
     await selectCategory(page, 'Favoriler');
-    expect(await channelNames(page)).toEqual(['TR:BEINSPORTS 2 HD']);
+    expect(await channelNames(page)).toEqual(['TR:SPORTS 2 HD']);
 
     await page.getByText('Favorilerden çıkar').click();
     expect(await page.evaluate(() => window.__h.favorites())).toEqual([]);
   });
 
   test('the Favorites category shows favorite-marked channels in category order', async ({ page }) => {
-    await open(page, { favorites: ['brt3', 'trt1', 'bein2'] });
-    expect(await channelNames(page)).toEqual(['TR:TRT 1 HD', 'TR:BEINSPORTS 2 HD', 'TR:BRT 3 HD']);
+    await open(page, { favorites: ['gamma3', 'alpha1', 'sports2'] });
+    expect(await channelNames(page)).toEqual(['TR:ALPHA 1 HD', 'TR:SPORTS 2 HD', 'TR:GAMMA 3 HD']);
   });
 });
 
@@ -194,7 +194,7 @@ test.describe('navigation and callbacks', () => {
     await channelRows(page).nth(1).click();
     await expect(page.getByText('1080p · 25 fps')).toBeVisible();
     await channelRows(page).nth(1).click(); // oynayan kanala tekrar
-    await expect.poll(async () => (await calls(page)).fullscreen).toEqual([{ id: 'show', categoryId: 'cat-0' }]);
+    await expect.poll(async () => (await calls(page)).fullscreen).toEqual([{ id: 'bravo', categoryId: 'cat-0' }]);
   });
 
   test('the Back key calls onBack', async ({ page }) => {
@@ -206,7 +206,7 @@ test.describe('navigation and callbacks', () => {
   test('arrow keys: category → channel list → between channels', async ({ page }) => {
     await open(page);
     await selectCategory(page, 'ULUSAL');
-    expect(await focusedId(page)).toBe('ch-cat-0-0'); // seçince ilk kanala odak
+    expect(await focusedId(page)).toBe('ch-cat-0-0'); // on selection, focus goes to the first channel
     await page.keyboard.press('ArrowDown');
     expect(await focusedId(page)).toBe('ch-cat-0-1');
     await page.keyboard.press('ArrowDown');
@@ -214,15 +214,15 @@ test.describe('navigation and callbacks', () => {
     await page.keyboard.press('ArrowUp');
     expect(await focusedId(page)).toBe('ch-cat-0-1');
     await page.keyboard.press('ArrowLeft');
-    expect(await focusedId(page)).toBe('cat-0'); // kanal listesinden sola: açık kategoriye
+    expect(await focusedId(page)).toBe('cat-0'); // left from the channel list: to the open category
     await page.keyboard.press('ArrowDown');
     expect(await focusedId(page)).toBe('cat-1');
-    // Açık olmayan kategoriden sağa basınca kanal listesine geçilmez (önce Enter ile açılmalı).
+    // Pressing right from a category that isn't open does not move to the channel list (it must be opened with Enter first).
     await page.keyboard.press('ArrowRight');
     expect(await focusedId(page)).toBe('cat-1');
     await page.keyboard.press('ArrowUp');
     expect(await focusedId(page)).toBe('cat-0');
-    await page.keyboard.press('ArrowRight'); // açık kategoriden sağa: kanal listesine
+    await page.keyboard.press('ArrowRight'); // right from the open category: to the channel list
     expect((await focusedId(page))?.startsWith('ch-cat-0-')).toBe(true);
   });
 
@@ -238,7 +238,7 @@ test.describe('navigation and callbacks', () => {
 test('return from fullscreen (resume): the playing channel continues in the preview without reloading', async ({ page }) => {
   await open(page, { resume: true });
   expect((await calls(page)).calls.loadLive).toEqual([]);
-  await expect(previewName(page, 'TR:SHOW TV HD')).toBeVisible();
+  await expect(previewName(page, 'TR:BRAVO TV HD')).toBeVisible();
   await expect(channelRows(page).nth(1)).toHaveClass(/active/);
   await expect(categoryRows(page).filter({ hasText: 'ULUSAL' })).toHaveClass(/active/);
 });
@@ -257,9 +257,9 @@ test.describe('program guide (EPG)', () => {
   test('a channel with no programmes or no tvgId says "no program guide"', async ({ page }) => {
     await open(page, { epg: true });
     await selectCategory(page, 'EPG DENEME');
-    await page.keyboard.press('ArrowDown'); // B: tvgId var ama program yok
+    await page.keyboard.press('ArrowDown'); // B: has tvgId but no program
     await expect(page.getByText('Bu kanal için yayın akışı yok')).toBeVisible();
-    await page.keyboard.press('ArrowDown'); // C: tvgId yok
+    await page.keyboard.press('ArrowDown'); // C: no tvgId
     await expect(page.getByText('Bu kanal için yayın akışı yok')).toBeVisible();
     await page.keyboard.press('ArrowUp');
     await page.keyboard.press('ArrowUp'); // tekrar A
@@ -286,7 +286,7 @@ test.describe('channel logos', () => {
     await expect(channelRows(page).nth(0)).toHaveClass(/list-row/);
     await expect(channelRows(page).nth(0).locator('.channel-logo')).toHaveClass(/has-logo/);
     await expect(channelRows(page).nth(0).locator('.channel-initials')).toHaveCount(0);
-    // 2. kanalın logosu 404: kısaltma kalır, bir daha istenmez
+    // 2nd channel's logo is 404: the abbreviation stays, it is not requested again
     await expect(channelRows(page).nth(1).locator('.channel-initials')).toHaveText('L0');
     await expect(channelRows(page).nth(1).locator('.channel-logo')).not.toHaveClass(/has-logo/);
   });
@@ -339,11 +339,11 @@ test.describe('buffering and connection state while playing', () => {
     await open(page, { playMode: 'never' });
     await selectCategory(page, 'ULUSAL');
     await channelRows(page).first().click();
-    await emit(page, 'buffering'); // ilk kare henüz gelmedi
+    await emit(page, 'buffering'); // first frame hasn't arrived yet
     await expect(conn(page)).toHaveText('Bağlanıyor');
     await emit(page, 'playing');
     await expect(conn(page)).toHaveText('Kararlı');
-    await emit(page, 'buffering'); // artık oynuyordu, bu gerçek bir kesinti
+    await emit(page, 'buffering'); // it was already playing, so this is a real interruption
     await expect(conn(page)).toHaveText('Takılıyor');
   });
 
@@ -375,12 +375,12 @@ test.describe('buffering and connection state while playing', () => {
   test('if the player errors the connection is retried (the same address is loaded again)', async ({ page }) => {
     await open(page);
     await play(page);
-    // Yeniden bağlanınca yayın hemen gelmesin: "Takılıyor" durumu kararlı biçimde gözlenebilsin.
+    // Don't let the stream come back immediately on reconnect: so the "Stalling" state can be observed reliably.
     await page.evaluate(() => (window.__h.opts.playMode = 'never'));
     await emit(page, 'error');
     await expect(conn(page)).toHaveText('Kesildi');
     await expect.poll(async () => (await calls(page)).calls.loadLive.length, { timeout: 6000 }).toBe(2);
-    expect((await calls(page)).calls.loadLive).toEqual(['http://fake.test/live/trt1.m3u8', 'http://fake.test/live/trt1.m3u8']);
+    expect((await calls(page)).calls.loadLive).toEqual(['http://fake.test/live/alpha1.m3u8', 'http://fake.test/live/alpha1.m3u8']);
     await expect(conn(page)).toHaveText('Takılıyor');
   });
 
@@ -400,8 +400,8 @@ test.describe('buffering and connection state while playing', () => {
     await open(page, { loadMs: 1500 });
     await selectCategory(page, 'ULUSAL');
     await channelRows(page).nth(0).click();
-    await channelRows(page).nth(2).click(); // ilki yüklenirken ikincisi
-    await expect(previewName(page, 'TR:STAR TV HD')).toBeVisible();
+    await channelRows(page).nth(2).click(); // the second one while the first is loading
+    await expect(previewName(page, 'TR:CORAL TV HD')).toBeVisible();
     await expect(page.getByText('1080p · 25 fps')).toBeVisible({ timeout: 6000 });
     await expect(channelRows(page).nth(2)).toHaveClass(/active/);
     await expect(channelRows(page).nth(0)).not.toHaveClass(/active/);
@@ -414,7 +414,7 @@ test.describe('keyboard shortcut and focus rules', () => {
     await selectCategory(page, 'SPOR');
     await page.keyboard.press('ArrowDown'); // 2. kanal
     await page.keyboard.press('f');
-    expect(await page.evaluate(() => window.__h.favorites())).toEqual(['bein2']);
+    expect(await page.evaluate(() => window.__h.favorites())).toEqual(['sports2']);
     await page.keyboard.press('f');
     expect(await page.evaluate(() => window.__h.favorites())).toEqual([]);
     await search(page).click();
@@ -443,7 +443,7 @@ test.describe('keyboard shortcut and focus rules', () => {
     await open(page);
     await playAndGoRight(page);
     await page.keyboard.press('ArrowRight');
-    await page.keyboard.press('ArrowDown'); // favori düğmesi
+    await page.keyboard.press('ArrowDown'); // favorite button
     await page.keyboard.press('ArrowLeft');
     expect(await focusedId(page)).toBe('ch-cat-0-2');
   });
@@ -451,7 +451,7 @@ test.describe('keyboard shortcut and focus rules', () => {
   test('if the playing channel is not visible in the open category, left from the preview goes to the FIRST row of the list', async ({ page }) => {
     await open(page);
     await playAndGoRight(page);
-    await categoryRows(page).filter({ hasText: 'YEREL' }).click(); // başka kategori açıldı
+    await categoryRows(page).filter({ hasText: 'YEREL' }).click(); // another category was opened
     await page.keyboard.press('ArrowRight');
     expect(await focusedId(page)).toBe('preview');
     await page.keyboard.press('ArrowLeft');
@@ -472,8 +472,8 @@ test.describe('keyboard shortcut and focus rules', () => {
     await playAndGoRight(page);
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Enter');
-    await expect.poll(async () => (await calls(page)).fullscreen).toEqual([{ id: 'star', categoryId: 'cat-0' }]);
+    await expect.poll(async () => (await calls(page)).fullscreen).toEqual([{ id: 'coral', categoryId: 'cat-0' }]);
     await page.keyboard.press('ArrowUp');
-    expect(await focusedId(page)).toBe('preview'); // en üstte: kategori/kanal listesine sıçramaz
+    expect(await focusedId(page)).toBe('preview'); // at the top: doesn't jump to the category/channel list
   });
 });

@@ -7,10 +7,10 @@ import { createStore } from './store.mjs';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const PUBLIC_DIR = join(__dirname, 'public');
 const PORT = Number(process.env.PORT) || 8788;
-// Yerelde yalnızca loopback; yayında HOST=0.0.0.0 ile açılır (TLS'i önündeki proxy sağlamalı).
+// Loopback only locally; in production it's opened with HOST=0.0.0.0 (TLS must be provided by a proxy in front).
 const HOST = process.env.HOST || '127.0.0.1';
 const MAX_BODY = 8 * 1024;
-const RATE_LIMIT = 30; // IP başına dakikada en fazla istek
+const RATE_LIMIT = 30; // maximum requests per minute per IP
 
 const store = createStore();
 setInterval(() => store.sweep(), 60_000).unref();
@@ -25,7 +25,7 @@ function rateLimited(ip) {
 
 const CONTENT_TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
 
-/** Statik sayfa için: satır içi betik dışında kaynak yok, çerçeveye alınamaz, MIME tahmini yok. */
+/** For the static page: no resources other than inline script, can't be framed, no MIME sniffing. */
 const SECURITY_HEADERS = {
   'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
   'x-content-type-options': 'nosniff',

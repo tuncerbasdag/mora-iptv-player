@@ -11,7 +11,7 @@ const ep = (id: string, name: string, s = 0, e = 0, show = 'Dizi'): MediaItem =>
   name,
   group: 'G',
   kind: 'series',
-  url: `http://x/${id}`,
+  url: `http://example.test/${id}`,
   ...(e > 0 ? { episode: { show, season: s, episode: e } } : {}),
 });
 const show: Show = {
@@ -51,8 +51,8 @@ test('episode name: the series name and the SxxExx pattern are dropped; "Bölüm
 test('UrlFailureCache: an added address is remembered; instances are isolated from each other', () => {
   const a = new UrlFailureCache();
   const b = new UrlFailureCache();
-  assert.equal(a.has('http://x/1.png'), false);
-  a.add('http://x/1.png');
-  assert.equal(a.has('http://x/1.png'), true);
-  assert.equal(b.has('http://x/1.png'), false);
+  assert.equal(a.has('http://example.test/1.png'), false);
+  a.add('http://example.test/1.png');
+  assert.equal(a.has('http://example.test/1.png'), true);
+  assert.equal(b.has('http://example.test/1.png'), false);
 });

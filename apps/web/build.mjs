@@ -32,8 +32,8 @@ await copyStyles();
 if (watch) {
   const ctx = await context(options);
   await ctx.watch();
-  // Dosyayı değil klasörü izle: editörler/araçlar dosyayı silip yeniden yazınca (yeni inode)
-  // dosya izleyicisi sessizce kopar; klasör izleyicisi bundan etkilenmez.
+  // Watch the folder, not the file: when editors/tools delete and rewrite a file (new inode),
+  // a file watcher silently detaches; a folder watcher is unaffected.
   let timer;
   fsWatch(dirname(STYLES_SRC), (_event, name) => {
     if (name !== 'styles.css') return;

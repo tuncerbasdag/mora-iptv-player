@@ -1,6 +1,6 @@
 /**
- * Oynatıcı katmanı (playerOverlay.ts) karakterizasyon testleri: gerçek Chrome'da, gerçek PlayerController,
- * sahte oynatıcı ile. Amaç, dosyayı parçalara bölerken davranışın değişmediğini doğrulamak. `npm run test:e2e`.
+ * Characterization tests for the player overlay (playerOverlay.ts): in real Chrome, with the real PlayerController,
+ * and a fake player. The goal is to verify that behavior doesn't change while splitting the file into parts. `npm run test:e2e`.
  */
 import { expect, test, type Page } from '@playwright/test';
 
@@ -15,8 +15,8 @@ const play = (page: Page, key: 'live' | 'live2' | 'movie' | 'episode') => page.e
 const emit = (page: Page, ev: string, ...args: unknown[]) => page.evaluate(([e, a]) => window.__o.emit(e as never, ...(a as unknown[])), [ev, args] as const);
 const o = (page: Page) => page.evaluate(() => ({ back: window.__o.back, ended: window.__o.ended, prev: window.__o.prev, next: window.__o.next, steps: window.__o.steps, calls: window.__o.adapter.calls, time: window.__o.adapter.time, paused: window.__o.adapter.paused }));
 const press = (page: Page, key: string) => page.keyboard.press(key);
-/** `repeat: true` ile tuş (basılı tutma). */
-/** Playwright'ın tanımadığı tuşlar (MediaPlay...) için doğrudan olay. */
+/** Key with `repeat: true` (held down). */
+/** Direct event for keys Playwright doesn't recognize (MediaPlay...). */
 const pressMedia = (page: Page, key: string) => page.evaluate((k) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true })), key);
 const pressRepeat = (page: Page, key: string) => page.evaluate((k) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k, repeat: true, bubbles: true })), key);
 
@@ -28,7 +28,7 @@ const ring = (page: Page) =>
     const v = el?.getAttribute('aria-valuenow');
     return v == null ? null : Number(v);
   });
-/** Canlı alt çubuğu (148px yüksekliğindeki bar): görünürlük ve saydamlık. */
+/** Live bottom bar (the 148px-high bar): visibility and opacity. */
 const liveBar = (page: Page) =>
   page.evaluate(() => {
     const el = [...document.querySelectorAll<HTMLElement>('div')].find((d) => d.style.height === '148px');
@@ -56,7 +56,7 @@ test.describe('live stream', () => {
     await play(page, 'live');
     await expect.poll(() => centerMsg(page)).toBe('Yayın yükleniyor');
     await expect.poll(() => ring(page)).toBeGreaterThan(0);
-    await expect(page.getByText('TR:TRT 1 HD')).toBeVisible();
+    await expect(page.getByText('TR:ALPHA 1 HD')).toBeVisible();
     await expect(page.getByText('ULUSAL')).toBeVisible();
     await expect(page.getByText('Bağlanıyor')).toBeVisible();
     // ilk kare gelince
@@ -66,7 +66,7 @@ test.describe('live stream', () => {
     await expect(page.getByText('Kararlı')).toBeVisible();
     await expect.poll(() => centerMsg(page)).toBeNull();
     await expect.poll(() => ring(page), { timeout: 3000 }).toBeNull();
-    expect((await o(page)).calls.loadLive).toEqual(['http://fake.test/live/trt1.m3u8']);
+    expect((await o(page)).calls.loadLive).toEqual(['http://fake.test/live/alpha1.m3u8']);
   });
 
   test('the loading ring does not fall back', async ({ page }) => {
@@ -93,20 +93,20 @@ test.describe('live stream', () => {
     expect((await liveBar(page))?.opacity).toBe('0');
     await page.clock.fastForward(700);
     expect((await liveBar(page))?.display).toBe('none');
-    await press(page, 'Enter'); // canlıda duraklatma yok; Tamam çubuğu gösterir
+    await press(page, 'Enter'); // no pause in live; OK shows the bar
     expect(await liveBar(page)).toEqual({ display: 'flex', opacity: '1' });
     expect((await o(page)).calls.pause).toBe(0);
   });
 
   test('Down: shows the bottom bar but does not change channel; Up does nothing', async ({ page }) => {
-    await open(page, { channels: [{ id: 'l2', name: 'TR:SHOW TV HD', group: 'ULUSAL', kind: 'live', url: 'http://fake.test/live/show.m3u8' }] }, true);
+    await open(page, { channels: [{ id: 'l2', name: 'TR:BRAVO TV HD', group: 'ULUSAL', kind: 'live', url: 'http://fake.test/live/bravo.m3u8' }] }, true);
     await play(page, 'live');
     await page.clock.fastForward(1000);
     await expect(page.getByText('Kararlı')).toBeVisible();
-    await page.clock.fastForward(5800); // bar kaybolsun, tuşla yeniden görünsün diye
+    await page.clock.fastForward(5800); // so the bar disappears and reappears on a key press
     await press(page, 'ArrowDown');
     expect((await o(page)).steps).toEqual([]);
-    expect((await o(page)).calls.loadLive).toEqual(['http://fake.test/live/trt1.m3u8']);
+    expect((await o(page)).calls.loadLive).toEqual(['http://fake.test/live/alpha1.m3u8']);
     expect(await liveBar(page)).toEqual({ display: 'flex', opacity: '1' });
     await press(page, 'ArrowUp');
     expect((await o(page)).steps).toEqual([]);
@@ -114,19 +114,19 @@ test.describe('live stream', () => {
   });
 
   test('remote CH+ / CH-: next / previous channel; holding does not skip repeatedly', async ({ page }) => {
-    await open(page, { channels: [{ id: 'l2', name: 'TR:SHOW TV HD', group: 'ULUSAL', kind: 'live', url: 'http://fake.test/live/show.m3u8' }] });
+    await open(page, { channels: [{ id: 'l2', name: 'TR:BRAVO TV HD', group: 'ULUSAL', kind: 'live', url: 'http://fake.test/live/bravo.m3u8' }] });
     await play(page, 'live');
     await expect(page.getByText('Kararlı')).toBeVisible();
-    // Tizen kumandası yalnızca keyCode gönderir (427 = CH+, 428 = CH-).
+    // The Tizen remote sends only keyCode (427 = CH+, 428 = CH-).
     const pressCode = (code: number, repeat = false) =>
       page.evaluate(([c, r]) => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Unidentified', keyCode: c as number, repeat: r as boolean, bubbles: true })), [code, repeat] as const);
     await pressCode(427);
-    await expect.poll(async () => (await o(page)).calls.loadLive).toEqual(['http://fake.test/live/trt1.m3u8', 'http://fake.test/live/show.m3u8']);
+    await expect.poll(async () => (await o(page)).calls.loadLive).toEqual(['http://fake.test/live/alpha1.m3u8', 'http://fake.test/live/bravo.m3u8']);
     await pressCode(427, true);
     expect((await o(page)).steps).toEqual([1]);
     await pressCode(428);
     expect((await o(page)).steps).toEqual([1, -1]);
-    await pressMedia(page, 'ChannelUp'); // tarayıcıdaki tuş adı da çalışır
+    await pressMedia(page, 'ChannelUp'); // the browser key name works too
     expect((await o(page)).steps).toEqual([1, -1, 1]);
   });
 
@@ -144,9 +144,9 @@ test.describe('live stream', () => {
     await page.evaluate(() => {
       window.__o.adapter.diagnostics = { ...window.__o.adapter.diagnostics, bufferSeconds: 0.2, holding: true, droppedFrames: 40 };
     });
-    await expect(page.getByText('Tampon: 0.2 sn (dolması bekleniyor)')).toBeVisible(); // 500 ms'de bir güncellenir
+    await expect(page.getByText('Tampon: 0.2 sn (dolması bekleniyor)')).toBeVisible(); // updated every 500 ms
     await expect(page.getByText('Düşen kare: 40 / 1450')).toBeVisible();
-    // Tizen kumandası Bilgi tuşunu yalnızca keyCode ile gönderir (457).
+    // The Tizen remote sends the Info key only via keyCode (457).
     await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Unidentified', keyCode: 457, bubbles: true })));
     await expect(page.getByText('Oynatıcı: hls.js')).toBeHidden();
   });
@@ -178,12 +178,12 @@ test.describe('live stream', () => {
     await open(page);
     await play(page, 'live');
     await expect(page.getByText('Kararlı')).toBeVisible();
-    await page.evaluate(() => window.__o.set({ playMode: 'never' })); // yeniden bağlanınca yayın hemen gelmesin
+    await page.evaluate(() => window.__o.set({ playMode: 'never' })); // don't let the stream come back immediately on reconnect
     await emit(page, 'error');
     await expect.poll(() => centerMsg(page), { timeout: 4000 }).toBe('Yayın yeniden bağlanıyor');
     await expect(page.getByText('Yeniden bağlanıyor', { exact: true })).toBeVisible();
     await expect.poll(() => ring(page), { timeout: 3000 }).toBeGreaterThan(0);
-    await page.evaluate(() => window.__o.emit('playing')); // yayın geri geldi
+    await page.evaluate(() => window.__o.emit('playing')); // the stream is back
     await expect(page.getByText('Kararlı')).toBeVisible();
     await expect.poll(() => centerMsg(page)).toBeNull();
   });
@@ -252,7 +252,7 @@ test.describe('movie/series', () => {
     expect((await vodBar(page))?.opacity).toBe('0');
     await page.clock.fastForward(700);
     expect((await vodBar(page))?.display).toBe('none');
-    await press(page, 'Enter'); // duraklat + çubuk
+    await press(page, 'Enter'); // pause + bar
     expect((await vodBar(page))?.display).toBe('flex');
   });
 
@@ -285,7 +285,7 @@ test.describe('movie/series', () => {
     await playing(page);
     await pressMedia(page, 'MediaPause');
     expect((await o(page)).paused).toBe(true);
-    await pressMedia(page, 'MediaPause'); // zaten duraklatılmış: değişmez
+    await pressMedia(page, 'MediaPause'); // already paused: no change
     expect((await o(page)).paused).toBe(true);
     await pressMedia(page, 'MediaPlay');
     expect((await o(page)).paused).toBe(false);
@@ -296,16 +296,16 @@ test.describe('movie/series', () => {
   test('seeking on the bar: Down → Right moves the target, applied after 700 ms; Back cancels; OK applies immediately', async ({ page }) => {
     await playing(page);
     await page.evaluate(() => window.__o.set({ time: 600 }));
-    await press(page, 'ArrowDown'); // içerikten çubuğa
+    await press(page, 'ArrowDown'); // from the content to the bar
     await press(page, 'ArrowRight');
     await expect(page.locator('.vod-track')).toHaveClass(/scrub/);
     expect(await clockOf(page)).toBe('10:10'); // hedef 610 sn
     await expect(page.locator('.vod-scrub-bubble')).toHaveText('10:10');
     await expect.poll(async () => (await o(page)).calls.seek, { timeout: 2000 }).toEqual([610]);
-    await expect(page.locator('.vod-track')).toHaveClass(/scrub/); // sarma uygulandı ama çubuk hâlâ seçili
+    await expect(page.locator('.vod-track')).toHaveClass(/scrub/); // seek applied but the bar is still selected
 
     await press(page, 'ArrowLeft');
-    await press(page, 'Escape'); // Geri: yalnızca sarmayı iptal eder
+    await press(page, 'Escape'); // Back: only cancels the seek
     let r = await o(page);
     expect(r.back).toBe(0);
     await page.waitForTimeout(900);
@@ -313,7 +313,7 @@ test.describe('movie/series', () => {
     expect(await clockOf(page)).toBe('10:10');
 
     await press(page, 'ArrowRight');
-    await press(page, 'Enter'); // bekleyen sarmayı hemen uygula
+    await press(page, 'Enter'); // apply the pending seek immediately
     r = await o(page);
     expect(r.calls.seek).toEqual([610, 620]);
   });
@@ -321,11 +321,11 @@ test.describe('movie/series', () => {
   test('button row: Down twice; Left/Right navigates; Up leaves; OK runs the action', async ({ page }) => {
     await playing(page);
     await press(page, 'ArrowDown');
-    await press(page, 'ArrowDown'); // düğmelere
+    await press(page, 'ArrowDown'); // to the buttons
     expect(await focusedCtl(page)).toBe('Duraklat');
     await press(page, 'ArrowLeft');
     expect(await focusedCtl(page)).toBe('10 saniye geri');
-    await press(page, 'ArrowLeft'); // en soldan öteye gitmez
+    await press(page, 'ArrowLeft'); // doesn't go beyond the far left
     expect(await focusedCtl(page)).toBe('10 saniye geri');
     await page.evaluate(() => window.__o.set({ time: 50 }));
     await press(page, 'Enter');
@@ -354,16 +354,16 @@ test.describe('movie/series', () => {
   });
 
   test('audio/subtitles: pill labels, opening the menu, selection (pause → reload with the chosen track → resume), Back closes the menu (does not leave the player)', async ({ page }) => {
-    // loadMs büyütülüyor: parça değişince tetiklenen yeniden yüklemenin "Film yükleniyor" penceresini
-    // (reconnecting DEĞİL) güvenilir şekilde yakalayabilmek için.
+    // loadMs is increased so that the "Loading movie" window of the reload triggered by a track change
+    // (NOT reconnecting) can be caught reliably.
     await playing(page, 'movie', { tracks: true, loadMs: 1000 });
     await expect(page.locator('.vod-pill').nth(0)).toHaveText('Ses · Türkçe');
     await expect(page.locator('.vod-pill').nth(1)).toHaveText('Altyazı · Kapalı');
     await press(page, 'ArrowDown');
     await press(page, 'ArrowDown');
     await press(page, 'ArrowRight');
-    await press(page, 'ArrowRight'); // oynat → ileri → Ses hapı
-    expect(await focusedCtl(page)).toBeNull(); // hapların aria-label'ı yok
+    await press(page, 'ArrowRight'); // play → forward → Audio pill
+    expect(await focusedCtl(page)).toBeNull(); // the pills have no aria-label
     await expect(page.locator('.vod-pill.focused')).toHaveText('Ses · Türkçe');
     await press(page, 'Enter');
     await expect(page.locator('.vod-menu').first()).toBeVisible();
@@ -372,8 +372,8 @@ test.describe('movie/series', () => {
     await expect(page.locator('.vod-menu-label.on')).toHaveText('Türkçe');
     await press(page, 'ArrowDown');
     await press(page, 'Enter');
-    // Parça değişince: duraklatılır, seçilen parçayla yeniden yüklenir ("Film yükleniyor" — "Yeniden bağlanıyor" DEĞİL),
-    // yükleme bitince (yeni 'tracks' olayında) seçim uygulanıp kesintisiz devam eder.
+    // When the track changes: paused, reloaded with the selected track ("Loading movie" — NOT "Reconnecting"),
+    // once loading finishes (on the new 'tracks' event) the selection is applied and playback continues uninterrupted.
     await expect.poll(async () => (await o(page)).calls.pause).toBeGreaterThan(0);
     await expect.poll(async () => (await o(page)).calls.loadVod.length).toBe(2);
     await expect(page.getByText('Film yükleniyor')).toBeVisible();
@@ -381,10 +381,10 @@ test.describe('movie/series', () => {
     await expect.poll(async () => (await o(page)).calls.setAudio, { timeout: 3000 }).toEqual([1]);
     await expect(page.locator('.vod-ctl[aria-label="Duraklat"]')).toBeAttached();
     await expect(page.locator('.vod-pill').nth(0)).toHaveText('Ses · İngilizce');
-    // altyazı menüsü: Geri yalnızca menüyü kapatır
+    // subtitle menu: Back only closes the menu
     await press(page, 'ArrowRight');
     await press(page, 'Enter');
-    await expect(page.locator('.vod-menu-row:visible')).toHaveCount(2); // Kapalı + Türkçe
+    await expect(page.locator('.vod-menu-row:visible')).toHaveCount(2); // Off + Turkish
     await press(page, 'Escape');
     await expect(page.locator('.vod-menu-row:visible')).toHaveCount(0);
     expect((await o(page)).back).toBe(0);
@@ -454,7 +454,7 @@ test.describe('movie/series', () => {
     await press(page, 'ArrowDown');
     await press(page, 'ArrowDown');
     for (let i = 0; i < 2; i++) await press(page, 'ArrowRight');
-    await press(page, 'Enter'); // menü açık
+    await press(page, 'Enter'); // menu is open
     const seeks = (await o(page)).calls.seek.length;
     await press(page, 'ArrowRight');
     await press(page, 'ArrowLeft');

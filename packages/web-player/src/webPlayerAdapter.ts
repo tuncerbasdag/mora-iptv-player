@@ -41,7 +41,7 @@ export class WebPlayerAdapter extends BasePlayerAdapter implements PlayerAdapter
   /** Whether the first frame of the new stream has arrived (the 'waiting' stall during initial load doesn't count). */
   private hasPlayed = false;
   private moveGraceUntil = 0;
-  /** Kullanıcı duraklattı (canlıda olmaz; film/dizide): taşıma sonrası kurtarma oynatmayı yeniden başlatmasın. */
+  /** The user paused (never in live; for movies/series): so recovery after a move doesn't restart playback. */
   private userPaused = false;
   private readonly eventLog: string[] = [];
   private readonly startedAt = Date.now();
@@ -83,12 +83,12 @@ export class WebPlayerAdapter extends BasePlayerAdapter implements PlayerAdapter
       this.engine = null;
       this.emit('error');
     });
-    // Medya olayları tanı panelinin günlüğüne yazılır (TV'de donmanın ne zaman ve hangi tamponla olduğunu görmek için).
+    // Media events are written to the diagnostics panel's log (to see when and with what buffer a freeze happens on the TV).
     for (const name of ['play', 'pause', 'emptied', 'stalled', 'seeking', 'playing'] as const) this.video.addEventListener(name, () => this.logEvent(name));
     this.video.addEventListener('waiting', () => {
       this.logEvent('waiting');
-      // Videoyu DOM'da taşımak (önizleme ↔ tam ekran) bazı TV tarayıcılarında medya hattını sıfırlayıp kısa bir 'waiting' üretir.
-      // Tampon sağlıklıysa bu bir ağ kesintisi değildir: sayılmaz, oynatma tutulmaz, "Arabelleğe alınıyor" gösterilmez.
+      // Moving the video in the DOM (preview ↔ full screen) can reset the media pipeline in some TV browsers and produce a brief 'waiting'.
+      // If the buffer is healthy this is not a network interruption: it isn't counted, playback isn't held, and "Buffering" isn't shown.
       if (Date.now() < this.moveGraceUntil && this.aheadSeconds() >= 0.5) return;
       if (this.hasPlayed) this.liveBuffer?.onWaiting();
       this.emit('buffering');
@@ -175,10 +175,10 @@ export class WebPlayerAdapter extends BasePlayerAdapter implements PlayerAdapter
     this.logEvent('moveTo');
     this.moveGraceUntil = Date.now() + MOVE_GRACE_MS;
     container.append(this.video);
-    // Akış zaten oynuyorsa video görünür kalmalı: taşıma sırasında 'playing' yeniden gelmeyebilir ve video gizli kalırsa yalnızca arka plan görünür.
+    // If the stream is already playing the video must stay visible: 'playing' may not arrive again during the move, and if the video stays hidden only the background shows.
     if (this.hasPlayed) this.video.style.visibility = 'visible';
-    // Taşıma oynatmayı (eski TV tarayıcılarında) durdurabilir: canlıda duraklatma yok, bu yüzden bizim istemediğimiz bir durma
-    // olursa oynatma kısa süre içinde yeniden başlatılır.
+    // The move can stop playback (in old TV browsers): there is no pausing in live, so if a stop we didn't request
+    // happens, playback is restarted shortly.
     for (const delay of [300, 1000]) {
       setTimeout(() => {
         if (this.liveBuffer && this.video.paused && !this.liveBuffer.holding && !this.userPaused && this.hasPlayed) {

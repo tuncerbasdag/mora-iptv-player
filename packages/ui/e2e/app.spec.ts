@@ -1,6 +1,6 @@
 /**
- * Uygulama düzeyi karakterizasyon testleri (app.ts / startApp): ekranlar arası geçiş, Canlı TV ↔ tam ekran oynatıcı
- * devri, film/dizi geri dönüşü, dizi bölüm gezinmesi ve ebeveyn kilidi oturumu. Gerçek Chrome'da, sahte oynatıcı ile.
+ * App-level characterization tests (app.ts / startApp): screen-to-screen transitions, Live TV ↔ full-screen player
+ * handoff, movie/series back navigation, series episode navigation and the parental-lock session. In real Chrome, with a fake player.
  */
 import { expect, test, type Page } from '@playwright/test';
 
@@ -14,10 +14,10 @@ const press = (page: Page, key: string, times = 1) => (async () => { for (let i 
 const adapters = (page: Page) => page.evaluate(() => window.__app.adapters.map((a) => ({ live: a.calls.loadLive, vod: a.calls.loadVod, stop: a.calls.stop, destroy: a.calls.destroy, moveTo: a.calls.moveTo })));
 const emit = (page: Page, ev: string) => page.evaluate((e) => window.__app.emit(e as never), ev);
 
-// Hangi ekranda olduğumuzu belirten işaretler
+// Markers that tell which screen we are on
 const welcome = (page: Page) => page.getByText('IPTV Player', { exact: true });
 const liveScreen = (page: Page) => page.locator('.preview-box');
-const liveOverlay = (page: Page) => page.locator('.status-bar'); // canlı tam ekranın durum çubuğu (mesaj yokken görünmez ama DOM'da)
+const liveOverlay = (page: Page) => page.locator('.status-bar'); // status bar of the live full screen (invisible when there is no message, but present in the DOM)
 const vodOverlay = (page: Page) => page.locator('.vod-bar');
 const vodBrowser = (page: Page) => page.locator('#vod-grid');
 const showDetail = (page: Page) => page.locator('[data-focus-id="play"]');
@@ -82,16 +82,16 @@ test.describe('Live TV ↔ fullscreen', () => {
     await expect(liveScreen(page)).toBeHidden();
     let a = await adapters(page);
     expect(a.length).toBe(1);
-    expect(a[0].live).toEqual(['http://fake.test/live/show.m3u8']);
+    expect(a[0].live).toEqual(['http://fake.test/live/bravo.m3u8']);
 
     await press(page, 'Escape');
     await expect(liveScreen(page)).toBeVisible();
     await expect(channelRows(page).nth(1)).toHaveClass(/active/);
     a = await adapters(page);
-    expect(a.length).toBe(1); // yeni oynatıcı açılmadı
-    expect(a[0].live.length).toBe(1); // yeniden yüklenmedi
+    expect(a.length).toBe(1); // no new player was opened
+    expect(a[0].live.length).toBe(1); // not reloaded
     expect(a[0].destroy).toBe(0);
-    expect(a[0].moveTo).toBeGreaterThanOrEqual(2); // önizleme → tam ekran → önizleme
+    expect(a[0].moveTo).toBeGreaterThanOrEqual(2); // preview → full screen → preview
   });
 
   test('Down/Up in fullscreen: next/previous channel in the category the user is looking at; wraps to the start/end at the ends', async ({ page }) => {
@@ -102,20 +102,20 @@ test.describe('Live TV ↔ fullscreen', () => {
     await expect(page.getByText('1080p · 25 fps')).toBeVisible();
     await channelRows(page).nth(0).click();
     await expect(liveOverlay(page)).toBeAttached();
-    // Tek yayın koruması hızlı art arda kanal değişimlerini birleştirir; her adım beklenir.
+    // Single-stream protection coalesces rapid back-to-back channel changes; each step is awaited.
     const lastLoaded = async () => {
       const urls = (await adapters(page))[0].live;
       return urls[urls.length - 1];
     };
     await press(page, 'ArrowDown');
-    await expect.poll(lastLoaded).toBe('http://fake.test/live/show.m3u8');
+    await expect.poll(lastLoaded).toBe('http://fake.test/live/bravo.m3u8');
     await press(page, 'ArrowDown');
-    await expect.poll(lastLoaded).toBe('http://fake.test/live/star.m3u8');
-    await press(page, 'ArrowDown'); // 3 kanal: başa sarar
-    await expect.poll(lastLoaded).toBe('http://fake.test/live/trt1.m3u8');
+    await expect.poll(lastLoaded).toBe('http://fake.test/live/coral.m3u8');
+    await press(page, 'ArrowDown'); // 3 channels: wraps to the start
+    await expect.poll(lastLoaded).toBe('http://fake.test/live/alpha1.m3u8');
     await press(page, 'ArrowUp'); // sona sarar
-    await expect.poll(lastLoaded).toBe('http://fake.test/live/star.m3u8');
-    // Geri: kanal değiştirilmişti → Canlı TV'ye şu an oynayan kanalla (STAR) dönülür
+    await expect.poll(lastLoaded).toBe('http://fake.test/live/coral.m3u8');
+    // Back: the channel was changed → returns to Live TV with the channel currently playing (CORAL)
     await press(page, 'Escape');
     await expect(liveScreen(page)).toBeVisible();
     await expect(catRow(page, 'ULUSAL')).toHaveClass(/active/);
@@ -130,7 +130,7 @@ test.describe('Live TV ↔ fullscreen', () => {
     await expect(page.getByText('Favorilere ekle')).toBeVisible();
     await page.getByText('Favorilere ekle').click();
     await catRow(page, 'Favoriler').click();
-    await channelRows(page).first().click(); // zaten önizlemede oynayan kanal: doğrudan tam ekran
+    await channelRows(page).first().click(); // the channel already playing in the preview: goes straight to full screen
     await expect(liveOverlay(page)).toBeAttached();
     await press(page, 'Escape');
     await expect(liveScreen(page)).toBeVisible();
@@ -181,7 +181,7 @@ test.describe('movies', () => {
 test.describe('series', () => {
   async function openEpisode(page: Page, season: number, episode: number): Promise<void> {
     await card(page, 'Diziler').click();
-    await page.locator('#vod-grid .vod-card').first().click(); // dizi detayı
+    await page.locator('#vod-grid .vod-card').first().click(); // series detail
     await expect(showDetail(page)).toBeVisible();
     await page.locator(`[data-focus-id="ep-${season}-${episode}"]`).click();
     await expect(vodOverlay(page)).toBeVisible();
@@ -208,13 +208,13 @@ test.describe('series', () => {
     await emit(page, 'ended');
     await expect.poll(urls).toEqual(['http://fake.test/series/s1e1.mp4', 'http://fake.test/series/s1e2.mp4']);
     await page.waitForTimeout(500);
-    await emit(page, 'ended'); // 2. sezona geçer
+    await emit(page, 'ended'); // moves on to season 2
     await expect.poll(urls).toContain('http://fake.test/series/s2e1.mp4');
     await page.waitForTimeout(500);
     await emit(page, 'ended');
     await expect.poll(urls).toContain('http://fake.test/series/s2e2.mp4');
     await page.waitForTimeout(500);
-    await emit(page, 'ended'); // son bölüm: detaya dön
+    await emit(page, 'ended'); // last episode: back to detail
     await expect(showDetail(page)).toBeVisible();
   });
 
@@ -241,8 +241,8 @@ test.describe('series', () => {
     await expect(vodOverlay(page)).toBeVisible();
     await page.waitForTimeout(500);
     await press(page, 'ArrowDown');
-    await press(page, 'ArrowDown'); // düğmelere
-    await press(page, 'ArrowLeft', 2); // oynat → geri 10 → önceki bölüm
+    await press(page, 'ArrowDown'); // to the buttons
+    await press(page, 'ArrowLeft', 2); // play → back 10 → previous episode
     await press(page, 'Enter');
     await expect.poll(async () => (await adapters(page)).flatMap((a) => a.vod)).toContain('http://fake.test/series/s1e2.mp4');
     await expect(page.locator('.vod-bar-sub')).toContainText('Sezon 1 · Bölüm 2');
@@ -314,7 +314,7 @@ test.describe('parental lock', () => {
   test('the Parental Lock pages always ask for the PIN (even if lockSettings is off)', async ({ page }) => {
     await open(page, { parental: true });
     await page.locator('[data-focus-id="settings-btn"]').click();
-    await expect(page.getByText('Bağlantılar').first()).toBeVisible(); // Ayarlar serbest
+    await expect(page.getByText('Bağlantılar').first()).toBeVisible(); // Settings are free
     await page.getByText('Ebeveyn Kilidi').first().click();
     await expect(pinScreen(page)).toBeVisible();
     await expect(page.getByText('Ebeveyn kilidi ayarlarını değiştirmek için PIN gir.')).toBeVisible();

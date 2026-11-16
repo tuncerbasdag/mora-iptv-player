@@ -20,7 +20,7 @@ test('flow: register → push → poll delivers the data once', () => {
   const got = s.poll(r.mac, r.secret);
   assert.equal(got.status, 'delivered');
   assert.deepEqual(got.payload, { url: URL_OK, name: 'Evim' });
-  assert.equal(s.poll(r.mac, r.secret).status, 'waiting'); // tekrar alınamaz
+  assert.equal(s.poll(r.mac, r.secret).status, 'waiting'); // can't be retrieved again
 });
 
 test('polling with a wrong secret key does not return the data', () => {
@@ -54,7 +54,7 @@ test('no session gives not_found; the session is deleted when time runs out, pol
   assert.equal(s.push({ mac: 'aa:bb:cc:dd:ee:ff', pin: '123456', url: URL_OK }).error, 'not_found');
   const r = s.register('aa:bb:cc:dd:ee:ff');
   t += SESSION_TTL_MS - 1000;
-  assert.equal(s.poll(r.mac, r.secret).status, 'waiting'); // süreyi yeniler
+  assert.equal(s.poll(r.mac, r.secret).status, 'waiting'); // renews the lifetime
   t += SESSION_TTL_MS - 1000;
   assert.equal(s.poll(r.mac, r.secret).status, 'waiting');
   t += SESSION_TTL_MS + 1;
