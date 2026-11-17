@@ -8,6 +8,12 @@
 # Mora IPTV Player
 
 A personal IPTV **player**. It provides no content: you add your own M3U/M3U8 playlist or Xtream account.
+
+> **Disclaimer:** Mora IPTV Player is only a media player. It does not include, host, sell, recommend or link to any
+> channels, playlists or IPTV subscriptions. You are solely responsible for the content you add and for making sure
+> you have the right to watch it. The authors do not endorse or take responsibility for any use of this software to
+> access content without permission.
+
 It has three targets:
 
 1. **Samsung Smart TV (Tizen)**: you install it on your own TV with Developer Mode.

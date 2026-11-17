@@ -142,6 +142,10 @@ jobs:
 
           Later updates installed from inside the app do not show this warning again.
 
+          ## Disclaimer
+
+          Mora IPTV Player is only a media player. It does not include, host, sell, recommend or link to any channels, playlists or IPTV subscriptions. You are solely responsible for the content you add and for making sure you have the right to watch it.
+
           ## What's changed
           EOF
             gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --draft --verify-tag \
