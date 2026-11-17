@@ -3,7 +3,8 @@ import type { Library } from '../../../core/src/types.ts';
 import { FocusManager } from '../focusManager.ts';
 import { movieIconSvg, seriesIconSvg, tvIconSvg } from '../icons.ts';
 import { HomeCard, type HomeCardSpec } from './welcome/homeCard.ts';
-import { buildWelcomeHeader } from './welcome/welcomeHeader.ts';
+import type { AppUpdateState, AppUpdater } from '../appUpdater.ts';
+import { buildWelcomeHeader, setUpdateBadge } from './welcome/welcomeHeader.ts';
 import { welcomeCandidateFilter } from './welcome/welcomeNav.ts';
 
 /** Injected by the web/Tizen builds (esbuild `define`, from package.json); absent in other bundles (e.g. tests). */
@@ -20,6 +21,9 @@ export interface WelcomeScreenCallbacks {
   onToggleParental?: () => void;
   /** Library already filtered to exclude locked categories (so the counters don't leak locked content); falls back to the playlist's library if not provided. */
   getLibrary?: () => Library | null;
+  /** Desktop app only: shows a "new version" badge when the updater finds one. */
+  appUpdater?: AppUpdater;
+  onOpenUpdates?: () => void;
 }
 
 /**
@@ -39,6 +43,7 @@ export function renderWelcomeScreen(container: HTMLElement, playlist: PlaylistPo
     parentalState: cb.parentalState?.() ?? 'off',
     onOpenSettings: cb.onOpenSettings,
     onToggleParental: cb.onToggleParental,
+    ...(cb.appUpdater && cb.onOpenUpdates ? { onOpenUpdates: cb.onOpenUpdates } : {}),
   });
 
   const grid = document.createElement('div');
@@ -102,5 +107,20 @@ export function renderWelcomeScreen(container: HTMLElement, playlist: PlaylistPo
   // card (Live TV) to make it the default selection.
   focusManager.focus(cards[0].el.dataset.focusId!);
   focusManager.onDestroy(unsubscribe);
+  if (cb.appUpdater) {
+    const paint = (st: AppUpdateState | null): void => setUpdateBadge(header, st ? updateBadgeText(st) : null);
+    const offState = cb.appUpdater.onState(paint);
+    void cb.appUpdater.getState().then(paint);
+    focusManager.onDestroy(offState);
+  }
   return focusManager;
+}
+
+/** Text of the home-screen update pill for an updater state (null = nothing to show). */
+export function updateBadgeText(st: AppUpdateState): string | null {
+  const v = st.version ? ` ${st.version}` : '';
+  if (st.status === 'available') return `Yeni sürüm${v}`;
+  if (st.status === 'downloading') return `Güncelleme indiriliyor${st.percent != null ? ` %${Math.round(st.percent)}` : ''}`;
+  if (st.status === 'ready') return `Güncelleme hazır${v}`;
+  return null;
 }

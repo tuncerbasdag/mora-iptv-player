@@ -21,6 +21,7 @@ export class HomeController {
         onOpenMovies: () => nav.movies(),
         onOpenSeries: () => nav.series(),
         onOpenSettings: () => nav.settings(),
+        ...(deps.appUpdater ? { appUpdater: deps.appUpdater, onOpenUpdates: () => nav.settings('updates') } : {}),
         getLibrary: () => this.ctx.library(),
         parentalState: () => parental.state(),
         onToggleParental: () => {

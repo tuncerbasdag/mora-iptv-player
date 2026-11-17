@@ -8,6 +8,8 @@ export interface WelcomeHeaderOptions {
   parentalState: 'off' | 'locked' | 'open';
   onOpenSettings: () => void;
   onToggleParental?: () => void;
+  /** Desktop app only: the "new version" pill (and the dot on Settings) opens Settings → Update. */
+  onOpenUpdates?: () => void;
 }
 
 /** Brand (logo + "Mora IPTV Player") and the buttons on the right: parental lock, active connection badge, Settings. */
@@ -58,6 +60,7 @@ function buildActions(opts: WelcomeHeaderOptions): HTMLElement {
   Object.assign(right.style, { display: 'flex', alignItems: 'center' });
   // Parental lock button (only when the lock is enabled): asks for the PIN while locked, re-locks when open.
   if (opts.parentalState !== 'off' && opts.onToggleParental) right.append(buildLockButton(opts.parentalState, opts.onToggleParental));
+  if (opts.onOpenUpdates) right.append(buildUpdatePill(opts.onOpenUpdates));
   right.append(buildConnectionPill(opts.active, opts.onOpenSettings), buildSettingsButton(opts.onOpenSettings));
   return right;
 }
@@ -124,6 +127,50 @@ function buildConnectionPill(active: Connection | null, onOpenSettings: () => vo
   return pill;
 }
 
+/**
+ * "New version" pill, hidden until the desktop updater reports something (see `setUpdateBadge`). Mouse-only on purpose:
+ * only the desktop app has an updater, so it is not part of the focus order.
+ */
+function buildUpdatePill(onOpen: () => void): HTMLElement {
+  const pill = document.createElement('button');
+  pill.type = 'button';
+  pill.dataset.updatePill = '';
+  Object.assign(pill.style, {
+    display: 'none',
+    alignItems: 'center',
+    marginRight: '20px',
+    height: '56px',
+    padding: '0 24px',
+    borderRadius: '28px',
+    border: '2px solid var(--accent)',
+    background: 'var(--accent-soft)',
+    color: 'var(--text)',
+    fontSize: '24px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  });
+  const dot = document.createElement('span');
+  Object.assign(dot.style, { width: '12px', height: '12px', borderRadius: '50%', background: 'var(--accent)', marginRight: '12px', flex: 'none' });
+  const label = document.createElement('span');
+  label.dataset.updateLabel = '';
+  pill.append(dot, label);
+  pill.addEventListener('click', onOpen);
+  return pill;
+}
+
+/** Shows (text) or hides (null) the update pill and the dot on the Settings button. */
+export function setUpdateBadge(header: HTMLElement, text: string | null): void {
+  const pill = header.querySelector<HTMLElement>('[data-update-pill]');
+  const dot = header.querySelector<HTMLElement>('[data-settings-dot]');
+  if (pill) {
+    pill.style.display = text ? 'flex' : 'none';
+    const label = pill.querySelector<HTMLElement>('[data-update-label]');
+    if (label && text) label.textContent = text;
+  }
+  if (dot) dot.style.display = text ? 'block' : 'none';
+}
+
 function buildSettingsButton(onOpenSettings: () => void): HTMLElement {
   const settingsBtn = document.createElement('button');
   settingsBtn.dataset.focusId = 'settings-btn';
@@ -141,7 +188,22 @@ function buildSettingsButton(onOpenSettings: () => void): HTMLElement {
     justifyContent: 'center',
     cursor: 'pointer',
     padding: '0',
+    position: 'relative',
   });
+  const dot = document.createElement('span');
+  dot.dataset.settingsDot = '';
+  Object.assign(dot.style, {
+    display: 'none',
+    position: 'absolute',
+    top: '6px',
+    right: '6px',
+    width: '20px',
+    height: '20px',
+    borderRadius: '50%',
+    background: 'var(--accent)',
+    border: '3px solid var(--bg, #1b1b1d)',
+  });
+  settingsBtn.append(dot);
   settingsBtn.addEventListener('click', onOpenSettings);
   return settingsBtn;
 }
