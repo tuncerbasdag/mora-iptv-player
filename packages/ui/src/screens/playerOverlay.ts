@@ -1,8 +1,8 @@
 import type { ConnectivityProbe } from '../../../core/src/connectivity.ts';
 import type { PlaybackStore, SettingsStore } from '../../../core/src/storage.ts';
 import { DEFAULT_SETTINGS, type MediaItem } from '../../../core/src/types.ts';
-import { backChevronSvg, fullscreenEnterIconSvg, fullscreenExitIconSvg, hasMouseSupport, onFullscreenChange, setWindowControlsVisible, toggleFullscreen } from '../mouseSupport.ts';
-import type { PlayerAdapter } from '../playerAdapter.ts';
+import { backChevronSvg, fullscreenEnterIconSvg, fullscreenExitIconSvg, hasMouseSupport, isDesktopApp, pipIconSvg, onFullscreenChange, setWindowControlsVisible, toggleFullscreen } from '../mouseSupport.ts';
+import { pictureInPictureOf, type PlayerAdapter } from '../playerAdapter.ts';
 import { PlayerController, type PlayerControllerState } from '../playerController.ts';
 import { DiagnosticsPanel } from './overlay/overlayDiagnostics.ts';
 import { OverlayKeyHandler } from './overlay/overlayKeys.ts';
@@ -181,6 +181,24 @@ class PlayerOverlay implements PlayerOverlayHandle {
     });
     fullscreen.addEventListener('click', () => toggleFullscreen());
     screen.append(fullscreen);
+
+    // Picture-in-Picture (top-right, next to fullscreen): floats the picture in a small always-on-top window.
+    // Desktop (Electron) app only, and only when the player supports it (never in the plain browser or on Tizen).
+    const pip = isDesktopApp() ? pictureInPictureOf(this.adapter) : null;
+    let pipBtn: HTMLButtonElement | null = null;
+    if (pip) {
+      pipBtn = document.createElement('button');
+      pipBtn.type = 'button';
+      pipBtn.setAttribute('aria-label', 'Picture in Picture');
+      pipBtn.innerHTML = pipIconSvg(24);
+      Object.assign(pipBtn.style, {
+        position: 'absolute', top: '64px', right: '112px', width: '48px', height: '48px', borderRadius: '50%',
+        border: '1.5px solid rgba(255,255,255,0.55)', background: 'transparent', color: '#fff', padding: '0',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: '50', opacity: '0', pointerEvents: 'none', transition: 'opacity 0.25s',
+      });
+      pipBtn.addEventListener('click', () => void pip.togglePictureInPicture());
+      screen.append(pipBtn);
+    }
     const offFullscreenChange = onFullscreenChange((fs) => {
       fullscreen.innerHTML = fs ? fullscreenExitIconSvg(24) : fullscreenEnterIconSvg(24);
       fullscreen.setAttribute('aria-label', fs ? 'Exit fullscreen' : 'Fullscreen');
@@ -199,6 +217,10 @@ class PlayerOverlay implements PlayerOverlayHandle {
       back.style.pointerEvents = 'auto';
       fullscreen.style.opacity = '1';
       fullscreen.style.pointerEvents = 'auto';
+      if (pipBtn) {
+        pipBtn.style.opacity = '1';
+        pipBtn.style.pointerEvents = 'auto';
+      }
       setWindowControlsVisible(true);
       screen.style.cursor = '';
       // Don't override a persistent bar (loading/error/paused); only reveal the auto-hiding one while playing.
@@ -209,6 +231,10 @@ class PlayerOverlay implements PlayerOverlayHandle {
         back.style.pointerEvents = 'none';
         fullscreen.style.opacity = '0';
         fullscreen.style.pointerEvents = 'none';
+        if (pipBtn) {
+          pipBtn.style.opacity = '0';
+          pipBtn.style.pointerEvents = 'none';
+        }
         setWindowControlsVisible(false);
         screen.style.cursor = 'none';
       }, BAR_VISIBLE_MS); // same duration as the bottom bar (see showBar) so both disappear together

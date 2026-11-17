@@ -158,3 +158,20 @@ export function diagnosticsOf(adapter: PlayerAdapter | null | undefined): Player
 export function tracksOf(adapter: PlayerAdapter | null | undefined): TrackCapable {
   return adapter && isTrackCapable(adapter) ? adapter : NO_TRACK_SUPPORT;
 }
+
+/**
+ * Role interface for players that can float the picture in a small always-on-top window (web: the browser's
+ * Picture-in-Picture API; Tizen has none). Optional, like `TrackCapable`.
+ */
+export interface PictureInPictureCapable {
+  isPictureInPictureSupported(): boolean;
+  /** Enters or leaves Picture-in-Picture. Must be called from a user gesture (click). */
+  togglePictureInPicture(): Promise<void>;
+  /** Calls back with true/false when the picture enters/leaves the floating window. Returns the unsubscribe function. */
+  onPictureInPictureChange(callback: (active: boolean) => void): () => void;
+}
+
+export function pictureInPictureOf(adapter: PlayerAdapter | null | undefined): PictureInPictureCapable | null {
+  const a = adapter as Partial<PictureInPictureCapable> | null | undefined;
+  return a && typeof a.togglePictureInPicture === 'function' && a.isPictureInPictureSupported?.() ? (a as PictureInPictureCapable) : null;
+}

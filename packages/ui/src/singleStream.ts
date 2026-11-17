@@ -3,11 +3,13 @@ import {
   diagnosticsOf,
   EMPTY_DIAGNOSTICS,
   isPendingTrackCapable,
+  pictureInPictureOf,
   tracksOf,
   type DiagnosticsCapable,
   type PendingTrackCapable,
   type PlayerAdapter,
   type PlayerAdapterEvent,
+  type PictureInPictureCapable,
   type PlayerDiagnostics,
   type TrackCapable,
 } from './playerAdapter.ts';
@@ -92,7 +94,7 @@ export class SingleStreamGate {
   }
 }
 
-class GuardedAdapter implements PlayerAdapter, TrackCapable, PendingTrackCapable, DiagnosticsCapable {
+class GuardedAdapter implements PlayerAdapter, TrackCapable, PendingTrackCapable, DiagnosticsCapable, PictureInPictureCapable {
   /** Incremented on every new request and every stop; this is how stale pending requests get cancelled. */
   private ticket = 0;
   private destroyed = false;
@@ -166,6 +168,16 @@ class GuardedAdapter implements PlayerAdapter, TrackCapable, PendingTrackCapable
   }
   moveTo(container: HTMLElement): void {
     this.inner.moveTo(container);
+  }
+  // Picture-in-Picture is passed through to the wrapped player (unsupported when it has none).
+  isPictureInPictureSupported(): boolean {
+    return pictureInPictureOf(this.inner) !== null;
+  }
+  togglePictureInPicture(): Promise<void> {
+    return pictureInPictureOf(this.inner)?.togglePictureInPicture() ?? Promise.resolve();
+  }
+  onPictureInPictureChange(callback: (active: boolean) => void): () => void {
+    return pictureInPictureOf(this.inner)?.onPictureInPictureChange(callback) ?? (() => {});
   }
   // Audio/subtitle tracks are passed through from the wrapped player unchanged (if the wrapper hid them, they'd never show up in the UI).
   getDiagnostics(): PlayerDiagnostics {

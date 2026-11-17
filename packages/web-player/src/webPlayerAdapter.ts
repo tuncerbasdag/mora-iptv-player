@@ -1,6 +1,6 @@
 import type { MediaTrack } from '../../ui/src/mediaTracks.ts';
 import { BasePlayerAdapter } from '../../ui/src/basePlayerAdapter.ts';
-import type { DiagnosticsCapable, PlayerAdapter, PlayerDiagnostics, TrackCapable } from '../../ui/src/playerAdapter.ts';
+import type { DiagnosticsCapable, PictureInPictureCapable, PlayerAdapter, PlayerDiagnostics, TrackCapable } from '../../ui/src/playerAdapter.ts';
 import { createLiveEngine, createVodEngine } from './engines/engineFactory.ts';
 import type { PlaybackEngine } from './engines/playbackEngine.ts';
 import { LiveBufferController, LiveBufferPolicy, type BufferedVideo } from './liveBuffer.ts';
@@ -29,7 +29,7 @@ const COMMON_FPS = [24, 25, 30, 50, 60];
  * How the stream is actually played (hls.js / mpegts.js / native `<video>`) lives in the `PlaybackEngine`
  * strategies (see ./engines/); all URLs go through the local proxy (/proxy) for CORS (see apps/web/server.mjs).
  */
-export class WebPlayerAdapter extends BasePlayerAdapter implements PlayerAdapter, TrackCapable, DiagnosticsCapable {
+export class WebPlayerAdapter extends BasePlayerAdapter implements PlayerAdapter, TrackCapable, DiagnosticsCapable, PictureInPictureCapable {
   private readonly video: HTMLVideoElement;
   private engine: PlaybackEngine | null = null;
   private statsTimer: ReturnType<typeof setInterval> | null = null;
@@ -189,6 +189,32 @@ export class WebPlayerAdapter extends BasePlayerAdapter implements PlayerAdapter
     }
   }
 
+  // ---- Picture-in-Picture (browser/Electron: the floating always-on-top window of the <video> element)
+  isPictureInPictureSupported(): boolean {
+    return typeof document !== 'undefined' && !!document.pictureInPictureEnabled && typeof this.video.requestPictureInPicture === 'function' && !this.video.disablePictureInPicture;
+  }
+
+  async togglePictureInPicture(): Promise<void> {
+    if (!this.isPictureInPictureSupported()) return;
+    try {
+      if (document.pictureInPictureElement === this.video) await document.exitPictureInPicture();
+      else await this.video.requestPictureInPicture();
+    } catch {
+      // not allowed right now (no user gesture, or the stream has no picture yet): the button simply does nothing
+    }
+  }
+
+  onPictureInPictureChange(callback: (active: boolean) => void): () => void {
+    const enter = (): void => callback(true);
+    const leave = (): void => callback(false);
+    this.video.addEventListener('enterpictureinpicture', enter);
+    this.video.addEventListener('leavepictureinpicture', leave);
+    return () => {
+      this.video.removeEventListener('enterpictureinpicture', enter);
+      this.video.removeEventListener('leavepictureinpicture', leave);
+    };
+  }
+
   // ---- audio / subtitles: delegated to the active engine (empty when there's no engine)
   getAudioTracks(): MediaTrack[] {
     return this.engine?.getAudioTracks() ?? [];
@@ -211,6 +237,8 @@ export class WebPlayerAdapter extends BasePlayerAdapter implements PlayerAdapter
 
   override destroy(): void {
     this.teardownSource();
+    // The player is gone: its floating Picture-in-Picture window must not stay open showing a dead stream.
+    if (typeof document !== 'undefined' && document.pictureInPictureElement === this.video) void document.exitPictureInPicture().catch(() => {});
     this.video.remove();
     super.destroy();
   }
