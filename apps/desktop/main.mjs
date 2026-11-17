@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, session, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, net, protocol, session, shell } from 'electron';
 import { existsSync } from 'node:fs';
 import { startServer } from '../web/server.mjs';
 import { fileURLToPath } from 'node:url';
@@ -10,6 +10,19 @@ import { openUpdatesPage, setupUpdater } from './updater.mjs';
  */
 const PORT = 38787;
 const APP_NAME = 'Mora IPTV Player';
+/**
+ * The window loads the UI from `mora://app/` instead of `http://127.0.0.1:38787/`: that address is what Chromium prints in the
+ * title of the Picture-in-Picture window. The scheme is only a front for the local server (see `protocol.handle` in main()):
+ * every request is forwarded to it, so the server keeps doing the static files and the /proxy (CORS) work unchanged.
+ * Note: localStorage/IndexedDB are tied to the origin, so the saved connections of builds that used the http address are not carried over.
+ */
+const APP_SCHEME = 'mora';
+const APP_ORIGIN = `${APP_SCHEME}://app`;
+
+// Must run before the app is ready. `stream` lets <video> load media from the scheme; `supportFetchAPI` lets fetch/XHR (hls.js, mpegts.js) use it.
+protocol.registerSchemesAsPrivileged([
+  { scheme: APP_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true } },
+]);
 
 app.setName(APP_NAME);
 app.setAboutPanelOptions({ applicationName: APP_NAME, applicationVersion: app.getVersion(), copyright: 'Copyright (c) 2026 Tuncer Başdağ' });
@@ -125,7 +138,7 @@ function createWindow() {
   mainWindow.webContents.on('will-navigate', (event, url) => {
     if (!url.startsWith(origin)) event.preventDefault();
   });
-  void mainWindow.loadURL(origin);
+  void mainWindow.loadURL(`${origin}/`);
 }
 
 async function main() {
@@ -138,7 +151,19 @@ async function main() {
 
   try {
     const server = await startServer({ port: PORT });
-    origin = server.url;
+    origin = APP_ORIGIN;
+    // Forward everything (method, headers such as Range, body, cancellation) to the local server; the response streams back as it arrives.
+    protocol.handle(APP_SCHEME, (request) => {
+      const { pathname, search } = new URL(request.url);
+      return net.fetch(`${server.url}${pathname}${search}`, {
+        method: request.method,
+        headers: request.headers,
+        body: request.body,
+        signal: request.signal,
+        duplex: 'half',
+        bypassCustomProtocolHandlers: true,
+      });
+    });
     app.on('before-quit', () => void server.close());
   } catch (err) {
     dialog.showErrorBox(APP_NAME, `Could not start the local server on port ${PORT}. Is another copy of the app running?\n\n${err?.message ?? err}`);
